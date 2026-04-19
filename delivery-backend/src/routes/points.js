@@ -8,8 +8,18 @@ router.get('/order/:orderId', auth, async (req, res, next) => {
       where: { orderId: req.params.orderId },
       order: [['sequence', 'ASC']],
     });
-    res.json(points);
-  } catch (e) { next(e); }
+    const result = points.map(p => {
+      const plain = p.toJSON();
+      if (typeof plain.items === 'string') {
+        try { plain.items = JSON.parse(plain.items); } catch { plain.items = []; }
+      }
+      return plain;
+    });
+    res.json(result);
+  } catch (e) {
+    console.error('ERREUR points/order:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 router.patch('/:id/status', auth, async (req, res, next) => {
@@ -22,7 +32,7 @@ router.patch('/:id/status', auth, async (req, res, next) => {
 
     await point.update({
       status,
-      failureNote: status === 'failed' ? failureNote : null,
+      failureNote: status === 'failed' ? (failureNote || null) : null,
     });
 
     await TrackingLog.create({
@@ -32,8 +42,28 @@ router.patch('/:id/status', auth, async (req, res, next) => {
       newStatus: status,
     });
 
-    res.json(point);
-  } catch (e) { next(e); }
+    res.json(point.toJSON());
+  } catch (e) {
+    console.error('ERREUR patch status:', e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+router.post('/', auth, async (req, res, next) => {
+  try {
+    const { orderId, address, latitude, longitude, sequence, clientName, clientId } = req.body;
+    const point = await DeliveryPoint.create({
+      orderId, address,
+      latitude:  latitude  || 31.6295,
+      longitude: longitude || -7.9811,
+      sequence, clientName, clientId,
+      status: 'pending',
+    });
+    res.status(201).json(point.toJSON());
+  } catch (e) {
+    console.error('ERREUR POST point:', e.message);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 module.exports = router;
