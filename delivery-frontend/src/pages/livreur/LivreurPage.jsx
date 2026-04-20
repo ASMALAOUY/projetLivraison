@@ -60,15 +60,30 @@ export default function LivreurPage() {
   }
 
   const updateStatus = async (pointId, status) => {
-    const failureNote = status === 'failed'
-      ? window.prompt("Raison de l'échec :") : null
-    try {
-      await api.patch(`/points/${pointId}/status`, { status, failureNote })
-      await loadData()
-    } catch (err) {
-      alert(err.response?.data?.error || 'Erreur')
+  const failureNote = status === 'failed'
+    ? window.prompt("Raison de l'échec :") : null
+
+  try {
+    await api.patch(`/points/${pointId}/status`, { status, failureNote })
+
+    // Si démarrage — envoyer position GPS immédiatement
+    if (status === 'in_progress' && navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(async pos => {
+        try {
+          await api.post('/tracking/gps', {
+            latitude:  pos.coords.latitude,
+            longitude: pos.coords.longitude,
+          })
+          console.log('GPS envoyé:', pos.coords.latitude, pos.coords.longitude)
+        } catch {}
+      })
     }
+
+    await loadOrders()
+  } catch (err) {
+    alert('Erreur : ' + (err.response?.data?.error || err.message))
   }
+}
 
   const allMyPoints  = myOrders.flatMap(o => o.DeliveryPoints || [])
   const delivered    = allMyPoints.filter(p => p.status === 'delivered').length

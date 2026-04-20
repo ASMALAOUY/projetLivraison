@@ -24,10 +24,7 @@ router.get('/order/:orderId', auth, async (req, res, next) => {
 router.patch('/:id/status', auth, async (req, res, next) => {
   try {
     const { status, failureNote } = req.body;
-
-    const point = await DeliveryPoint.findByPk(req.params.id, {
-      include: [{ model: DeliveryOrder }],
-    });
+    const point = await DeliveryPoint.findByPk(req.params.id);
     if (!point) return res.status(404).json({ error: 'Point introuvable' });
     if (point.status === 'delivered')
       return res.status(400).json({ error: 'Point déjà clôturé' });
@@ -37,18 +34,27 @@ router.patch('/:id/status', auth, async (req, res, next) => {
       failureNote: status === 'failed' ? (failureNote || null) : null,
     });
 
-    // Utiliser le driverId de la tournée (pas du token)
-    const driverIdForLog = point.DeliveryOrder?.driverId || req.user.id;
+    // Mettre à jour le statut de la tournée
+    const order = await DeliveryOrder.findByPk(point.orderId);
+    if (order && status === 'in_progress' && order.status === 'planned') {
+      await order.update({ status: 'in_progress', startedAt: new Date() });
+    }
+    if (order && status === 'delivered') {
+      const allPoints = await DeliveryPoint.findAll({ where: { orderId: point.orderId } });
+      const allDone = allPoints.every(p => p.id === point.id || p.status === 'delivered' || p.status === 'failed');
+      if (allDone) await order.update({ status: 'done', finishedAt: new Date() });
+    }
 
+    // Log sans FK stricte
     try {
       await TrackingLog.create({
-        driverId:  driverIdForLog,
-        pointId:   point.id,
+        driverId:  req.user.id,
+        pointId:   req.params.id,
         eventType: 'status_change',
         newStatus: status,
       });
     } catch (logErr) {
-      console.warn('TrackingLog non créé:', logErr.message);
+      console.warn('Log ignoré:', logErr.message);
     }
 
     res.json(point.toJSON());
