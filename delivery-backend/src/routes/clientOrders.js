@@ -20,15 +20,34 @@ router.post('/order', auth, async (req, res, next) => {
     const today      = new Date().toISOString().split('T')[0];
     const totalPrice = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-    const order = await DeliveryOrder.create({
-      driverId:  driver.id,
-      managerId: manager?.id || null,
-      date:      today,
-      status:    'planned',
+    // ── Chercher une tournée existante pour ce livreur aujourd'hui ──
+    let order = await DeliveryOrder.findOne({
+      where: {
+        driverId: driver.id,
+        date:     today,
+        status:   'planned',
+      },
     });
 
-    const count = await DeliveryPoint.count({ where: { orderId: order.id } });
+    // ── Sinon créer une nouvelle tournée ──
+    if (!order) {
+      order = await DeliveryOrder.create({
+        driverId:  driver.id,
+        managerId: manager?.id || null,
+        date:      today,
+        status:    'planned',
+      });
+      console.log('Nouvelle tournée créée:', order.id);
+    } else {
+      console.log('Tournée existante utilisée:', order.id);
+    }
 
+    // ── Compter les points existants pour la séquence ──
+    const count = await DeliveryPoint.count({
+      where: { orderId: order.id },
+    });
+
+    // ── Créer le point de livraison ──
     const point = await DeliveryPoint.create({
       orderId:       order.id,
       clientId:      client.id,
@@ -39,15 +58,17 @@ router.post('/order', auth, async (req, res, next) => {
       status:        'pending',
       clientName:    client.name,
       failureNote:   note || null,
-      items:         JSON.stringify(items),
+      items:         items,
       totalPrice,
       pickupAddress: pickupAddress || 'Entrepôt central',
     });
 
+    console.log('Point créé:', point.id, 'dans tournée:', order.id);
+
     res.status(201).json({
-      message: 'Commande créée !',
-      order:   order.toJSON(),
-      point:   point.toJSON(),
+      message: 'Commande créée avec succès !',
+      orderId: order.id,
+      pointId: point.id,
     });
 
   } catch (e) {
@@ -71,7 +92,6 @@ router.get('/my-orders', auth, async (req, res, next) => {
       order: [['createdAt', 'DESC']],
     });
 
-    // Parser items si c'est une string JSON
     const result = points.map(p => {
       const plain = p.toJSON();
       if (typeof plain.items === 'string') {

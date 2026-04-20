@@ -1,6 +1,6 @@
 const router = require('express').Router();
 const auth   = require('../middlewares/auth');
-const { DeliveryPoint, TrackingLog } = require('../models');
+const { DeliveryPoint, TrackingLog, DeliveryOrder } = require('../models');
 
 router.get('/order/:orderId', auth, async (req, res, next) => {
   try {
@@ -17,7 +17,6 @@ router.get('/order/:orderId', auth, async (req, res, next) => {
     });
     res.json(result);
   } catch (e) {
-    console.error('ERREUR points/order:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
@@ -25,7 +24,10 @@ router.get('/order/:orderId', auth, async (req, res, next) => {
 router.patch('/:id/status', auth, async (req, res, next) => {
   try {
     const { status, failureNote } = req.body;
-    const point = await DeliveryPoint.findByPk(req.params.id);
+
+    const point = await DeliveryPoint.findByPk(req.params.id, {
+      include: [{ model: DeliveryOrder }],
+    });
     if (!point) return res.status(404).json({ error: 'Point introuvable' });
     if (point.status === 'delivered')
       return res.status(400).json({ error: 'Point déjà clôturé' });
@@ -35,12 +37,19 @@ router.patch('/:id/status', auth, async (req, res, next) => {
       failureNote: status === 'failed' ? (failureNote || null) : null,
     });
 
-    await TrackingLog.create({
-      driverId:  req.user.id,
-      pointId:   req.params.id,
-      eventType: 'status_change',
-      newStatus: status,
-    });
+    // Utiliser le driverId de la tournée (pas du token)
+    const driverIdForLog = point.DeliveryOrder?.driverId || req.user.id;
+
+    try {
+      await TrackingLog.create({
+        driverId:  driverIdForLog,
+        pointId:   point.id,
+        eventType: 'status_change',
+        newStatus: status,
+      });
+    } catch (logErr) {
+      console.warn('TrackingLog non créé:', logErr.message);
+    }
 
     res.json(point.toJSON());
   } catch (e) {
@@ -61,7 +70,6 @@ router.post('/', auth, async (req, res, next) => {
     });
     res.status(201).json(point.toJSON());
   } catch (e) {
-    console.error('ERREUR POST point:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
