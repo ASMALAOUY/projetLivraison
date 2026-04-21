@@ -2,7 +2,7 @@ const router  = require('express').Router();
 const auth    = require('../middlewares/auth');
 const { Op }  = require('sequelize');
 const { User, DeliveryOrder, DeliveryPoint, TrackingLog } = require('../models');
-
+const bcrypt  = require('bcryptjs');
 // Liste de tous les livreurs
 router.get('/', auth, async (req, res, next) => {
   try {
@@ -111,11 +111,8 @@ router.get('/me/orders', auth, async (req, res, next) => {
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
-  const router  = require('express').Router();
-const bcrypt  = require('bcryptjs');
-const auth    = require('../middlewares/auth');
-const { User, DeliveryOrder, DeliveryPoint } = require('../models');
-
+  
+});
 
 
 // POST ajouter un livreur (gestionnaire uniquement)
@@ -191,8 +188,36 @@ router.delete('/:id', auth, async (req, res, next) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// GET livraisons du livreur connecté
+router.get('/me/orders', auth, async (req, res, next) => {
+  try {
+    const orders = await DeliveryOrder.findAll({
+      where: { driverId: req.user.id },
+      include: [{
+        model: DeliveryPoint,
+        as: 'DeliveryPoints',
+        required: false,
+      }],
+      order: [['date', 'DESC']],
+    });
 
-    
+    const result = orders.map(o => {
+      const plain = o.toJSON();
+      if (plain.DeliveryPoints) {
+        plain.DeliveryPoints = plain.DeliveryPoints.map(p => {
+          if (typeof p.items === 'string') {
+            try { p.items = JSON.parse(p.items); } catch { p.items = []; }
+          }
+          return p;
+        });
+      }
+      return plain;
+    });
+
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
+
+
 
 module.exports = router;
