@@ -11,24 +11,23 @@ router.post('/register', async (req, res, next) => {
   try {
     const { name, email, phone, password, role, vehicle } = req.body;
 
-    if (!['driver', 'manager', 'client'].includes(role))
+    // ── Bloquer l'inscription publique des gestionnaires ──
+    if (role === 'manager') {
+      return res.status(403).json({
+        error: 'Les comptes gestionnaire sont créés par l\'administrateur uniquement.',
+      });
+    }
+
+    if (!['driver', 'client'].includes(role))
       return res.status(400).json({ error: 'Rôle invalide' });
 
     if (!name || !password || !role)
       return res.status(400).json({ error: 'Champs obligatoires manquants' });
 
-    if (role === 'driver' && !phone)
-      return res.status(400).json({ error: 'Téléphone requis pour un livreur' });
-
-    if ((role === 'manager' || role === 'client') && !email)
-      return res.status(400).json({ error: 'Email requis' });
-
     const hash = await bcrypt.hash(password, 10);
-    const user = await User.create({
-      name, email, phone, password: hash, role, vehicle,
-    });
-
+    const user = await User.create({ name, email, phone, password: hash, role, vehicle });
     const token = sign({ id: user.id, role: user.role });
+
     res.status(201).json({
       token,
       user: { id: user.id, name: user.name, email: user.email,

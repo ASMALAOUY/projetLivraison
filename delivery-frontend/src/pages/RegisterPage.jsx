@@ -3,10 +3,10 @@ import { useNavigate, Link } from 'react-router-dom'
 import api from '../api/api'
 import useAuthStore from '../store/authStore'
 
-const REDIRECTS = { manager: '/dashboard', driver: '/livreur', client: '/suivi' }
+const REDIRECTS = { driver: '/livreur', client: '/suivi' }
 
 export default function RegisterPage() {
-  const [role, setRole]       = useState('manager')
+  const [role, setRole]       = useState('driver')
   const [form, setForm]       = useState({})
   const [error, setError]     = useState('')
   const [success, setSuccess] = useState('')
@@ -19,9 +19,10 @@ export default function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError(''); setSuccess('')
-    if (form.password !== form.confirm) {
+    if (form.password !== form.confirm)
       return setError('Les mots de passe ne correspondent pas')
-    }
+    if (form.password?.length < 6)
+      return setError('Mot de passe : minimum 6 caractères')
     setLoading(true)
     try {
       const { confirm, ...body } = form
@@ -46,15 +47,23 @@ export default function RegisterPage() {
         </div>
 
         <h1 className="text-xl font-bold text-center text-gray-800 mb-1">Créer un compte</h1>
-        <p className="text-sm text-gray-400 text-center mb-6">Choisissez votre rôle</p>
+        <p className="text-sm text-gray-400 text-center mb-6">Livreur ou Client</p>
 
-        <div className="flex gap-1 p-1 bg-gray-100 rounded-xl mb-5">
-          {['manager','driver','client'].map(r => (
-            <button key={r} onClick={() => { setRole(r); setForm({}); setError('') }}
-              className={`flex-1 py-2 text-xs font-medium rounded-lg transition-all ${
-                role === r ? 'bg-white text-blue-700 shadow-sm border border-gray-200' : 'text-gray-400'
+        {/* Sélecteur — seulement Livreur et Client */}
+        <div className="flex gap-2 p-1 bg-gray-100 rounded-xl mb-5">
+          {[
+            { key: 'driver', label: '🚴 Livreur' },
+            { key: 'client', label: '👤 Client'  },
+          ].map(r => (
+            <button key={r.key}
+              type="button"
+              onClick={() => { setRole(r.key); setForm({}); setError('') }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all ${
+                role === r.key
+                  ? 'bg-white text-blue-700 shadow-sm border border-gray-200'
+                  : 'text-gray-400 hover:text-gray-600'
               }`}>
-              {r === 'manager' ? 'Gestionnaire' : r === 'driver' ? 'Livreur' : 'Client'}
+              {r.label}
             </button>
           ))}
         </div>
@@ -65,18 +74,20 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-3">
           <Field label="Nom complet" value={form.name||''} onChange={v=>set('name',v)} placeholder="Prénom Nom" />
 
-          {(role === 'manager' || role === 'client') && (
+          {role === 'client' && (
             <Field label="Email" type="email" value={form.email||''} onChange={v=>set('email',v)} placeholder="email@exemple.com" />
           )}
 
-          <Field label="Téléphone" type="tel" value={form.phone||''} onChange={v=>set('phone',v)} placeholder="06xxxxxxxx" required={role==='driver'} />
+          <Field label="Téléphone" type="tel" value={form.phone||''} onChange={v=>set('phone',v)} placeholder="06xxxxxxxx" />
 
           {role === 'driver' && (
             <div>
-              <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">Véhicule</label>
+              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">
+                Véhicule
+              </label>
               <select value={form.vehicle||''} onChange={e=>set('vehicle',e.target.value)} required
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-                <option value="">Choisir…</option>
+                <option value="">Choisir un véhicule…</option>
                 <option>Moto</option>
                 <option>Vélo</option>
                 <option>Voiture</option>
@@ -106,7 +117,7 @@ export default function RegisterPage() {
 function Field({ label, type='text', value, onChange, placeholder, required=true }) {
   return (
     <div>
-      <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide">{label}</label>
+      <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">{label}</label>
       <input type={type} value={value} onChange={e=>onChange(e.target.value)}
         placeholder={placeholder} required={required}
         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 transition"

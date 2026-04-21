@@ -6,6 +6,7 @@ const ROLE_LINKS = {
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/map',       label: 'Carte live' },
     { to: '/orders',    label: 'Tournées'   },
+    { to: '/drivers',   label: 'Livreurs'   }, 
   ],
   driver: [{ to: '/livreur', label: 'Mes livraisons' }],
   client: [{ to: '/suivi',   label: 'Ma livraison'   }],
