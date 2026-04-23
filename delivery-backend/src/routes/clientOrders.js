@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const auth   = require('../middlewares/auth');
 const { DeliveryPoint, DeliveryOrder, User } = require('../models');
+const { Op } = require('sequelize');
 
 router.post('/order', auth, async (req, res, next) => {
   try {
@@ -105,6 +106,42 @@ router.get('/my-orders', auth, async (req, res, next) => {
     console.error('ERREUR my-orders:', e.message);
     res.status(500).json({ error: e.message });
   }
+});
+
+// Annuler une commande (seulement si pending)
+router.patch('/cancel/:pointId', auth, async (req, res, next) => {
+  try {
+    const point = await DeliveryPoint.findOne({
+      where: { id: req.params.pointId, clientId: req.user.id },
+    });
+    if (!point) return res.status(404).json({ error: 'Commande introuvable' });
+    if (point.status !== 'pending')
+      return res.status(400).json({ error: 'Impossible d\'annuler une commande déjà en cours ou livrée' });
+
+    await point.update({ status: 'failed', failureNote: 'Annulée par le client' });
+    res.json({ message: 'Commande annulée avec succès' });
+  } catch (e) { next(e); }
+});
+
+// Noter le livreur (seulement après livraison)
+router.post('/rate/:pointId', auth, async (req, res, next) => {
+  try {
+    const { rating, comment } = req.body;
+    if (!rating || rating < 1 || rating > 5)
+      return res.status(400).json({ error: 'Note entre 1 et 5 requise' });
+
+    const point = await DeliveryPoint.findOne({
+      where: { id: req.params.pointId, clientId: req.user.id },
+    });
+    if (!point) return res.status(404).json({ error: 'Commande introuvable' });
+    if (point.status !== 'delivered')
+      return res.status(400).json({ error: 'Vous ne pouvez noter qu\'une livraison effectuée' });
+    if (point.rating)
+      return res.status(400).json({ error: 'Vous avez déjà noté cette livraison' });
+
+    await point.update({ rating, ratingComment: comment || null });
+    res.json({ message: 'Merci pour votre évaluation !' });
+  } catch (e) { next(e); }
 });
 
 module.exports = router;

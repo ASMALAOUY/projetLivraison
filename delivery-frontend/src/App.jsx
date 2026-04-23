@@ -8,11 +8,13 @@ import OrdersPage    from './pages/gestionnaire/OrdersPage'
 import DriversPage   from './pages/gestionnaire/DriversPage'   // ← nouveau
 import LivreurPage   from './pages/livreur/LivreurPage'
 import TrackingPage  from './pages/client/TrackingPage'
-
+import LandingPage from './pages/LandingPage'
+import 'leaflet/dist/leaflet.css'
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login"    element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 

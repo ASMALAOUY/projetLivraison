@@ -79,7 +79,7 @@ export default function LivreurPage() {
       })
     }
 
-    await loadOrders()
+    await loadData()
   } catch (err) {
     alert('Erreur : ' + (err.response?.data?.error || err.message))
   }

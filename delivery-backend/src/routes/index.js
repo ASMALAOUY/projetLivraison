@@ -6,5 +6,5 @@ router.use('/orders',   require('./orders'));
 router.use('/points',   require('./points'));
 router.use('/tracking', require('./tracking'));
 router.use('/client',   require('./clientOrders'));
-
+router.use('/reviews', require('./reviews'))
 module.exports = router;
