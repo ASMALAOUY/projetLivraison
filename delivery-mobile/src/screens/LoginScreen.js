@@ -10,7 +10,7 @@ import useAuthStore from '../store/authStore';
 const ROLES = [
   { key: 'driver',  label: 'Livreur',      field: 'phone' },
   { key: 'client',  label: 'Client',       field: 'email' },
-  { key: 'manager', label: 'Gestionnaire', field: 'email' },
+ 
 ];
 
 export default function LoginScreen({ navigation }) {

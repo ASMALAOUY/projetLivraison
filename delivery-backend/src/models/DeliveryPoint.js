@@ -16,7 +16,8 @@ const DeliveryPoint = sequelize.define('DeliveryPoint', {
   totalPrice:  { type: DataTypes.FLOAT },       // ← prix total
   pickupAddress: { type: DataTypes.STRING },    // ← adresse de récupération
   rating:        { type: DataTypes.INTEGER },        // 1 à 5
-ratingComment: { type: DataTypes.STRING },         // commentaire optionnel
+  ratingComment: { type: DataTypes.STRING },         // commentaire optionnel
+  driverAcceptedId: { type: DataTypes.UUID, allowNull: true }, 
 }, { tableName: 'delivery_points' });
 
 module.exports = DeliveryPoint;

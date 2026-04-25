@@ -5,8 +5,7 @@ import useAuthStore from '../store/authStore'
 
 const ROLES = [
   { key: 'manager', label: 'Gestionnaire', field: 'email',  placeholder: 'email@exemple.com' },
-  { key: 'driver',  label: 'Livreur',      field: 'phone',  placeholder: '06xxxxxxxx' },
-  { key: 'client',  label: 'Client',       field: 'email',  placeholder: 'email@exemple.com' },
+
 ]
 
 const REDIRECTS = { manager: '/dashboard', driver: '/livreur', client: '/suivi' }
@@ -103,8 +102,7 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-sm text-gray-400 mt-5">
-          Pas de compte ?{' '}
-          <Link to="/register" className="text-blue-600 font-semibold hover:underline">S'inscrire</Link>
+  
         </p>
       </div>
     </div>

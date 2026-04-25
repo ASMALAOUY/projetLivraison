@@ -1,7 +1,7 @@
 const router  = require('express').Router();
 const auth    = require('../middlewares/auth');
 const { Op }  = require('sequelize');
-const { User, DeliveryOrder, DeliveryPoint, TrackingLog } = require('../models');
+const { User, DeliveryOrder, DeliveryPoint, TrackingLog, Driver } = require('../models');
 const bcrypt  = require('bcryptjs');
 
 // ─── Liste de tous les livreurs ───────────────────────────────────────────────
@@ -16,104 +16,90 @@ router.get('/', auth, async (req, res, next) => {
     res.status(500).json({ error: e.message });
   }
 });
-
-// ─── Commandes disponibles (points pending uniquement) ────────────────────────
+// ─── Commandes disponibles (points pending) ───────────────────────────────────
 router.get('/available-orders', auth, async (req, res, next) => {
   try {
-    const orders = await DeliveryOrder.findAll({
-      where: { status: 'planned' },
-      include: [{
-        model: DeliveryPoint,
-        as: 'DeliveryPoints',
-        required: true,
-        where: { status: 'pending' }, // ✅ seulement les points non acceptés
-      }],
+    const points = await DeliveryPoint.findAll({
+      where: { status: 'pending' },
       order: [['createdAt', 'ASC']],
     });
 
-    const result = orders.map(o => {
-      const plain = o.toJSON();
-      if (plain.DeliveryPoints) {
-        plain.DeliveryPoints = plain.DeliveryPoints.map(p => {
-          if (typeof p.items === 'string') {
-            try { p.items = JSON.parse(p.items); } catch { p.items = []; }
-          }
-          return p;
-        });
+    const result = points.map(p => {
+      const plain = p.toJSON();
+      if (typeof plain.items === 'string') {
+        try { plain.items = JSON.parse(plain.items); } catch { plain.items = []; }
       }
       return plain;
     });
 
     res.json(result);
   } catch (e) {
+    console.error('ERREUR available-orders:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
-// ─── Accepter un point individuel ────────────────────────────────────────────
-router.post('/accept-point/:pointId', auth, async (req, res, next) => {
+   
+
+ router.post('/accept-point/:pointId', auth, async (req, res, next) => {
   try {
-    const point = await DeliveryPoint.findByPk(req.params.pointId, {
-      include: [{ model: DeliveryOrder }]
-    });
+    const point = await DeliveryPoint.findByPk(req.params.pointId)
+    if (!point) return res.status(404).json({ error: 'Commande introuvable' })
+    if (point.status !== 'pending')
+      return res.status(400).json({ error: 'Cette commande a déjà été acceptée' })
 
-    if (!point) return res.status(404).json({ error: 'Commande introuvable' });
+    const order = await DeliveryOrder.findByPk(point.orderId)
+    if (!order) return res.status(404).json({ error: 'Tournée introuvable' })
 
-    if (point.status !== 'pending') {
-      return res.status(400).json({ error: 'Cette commande a déjà été acceptée' });
-    }
+    // ✅ Stocker le driverId dans le point lui-même
+    await point.update({
+      status: 'in_progress',
+      driverAcceptedId: req.user.id,   // ← sauvegarde qui a accepté
+    })
 
-    // ✅ Mettre à jour le point
-    await point.update({ status: 'in_progress' });
+    await order.update({ status: 'in_progress' })
 
-    // ✅ Assigner le livreur ET passer la tournée en in_progress
-    const order = point.DeliveryOrder;
-    await order.update({
-      driverId: req.user.id,
-      status: 'in_progress', // ← était manquant, c'est pour ça que /me/orders ne trouvait rien
-    });
-
-    res.json({ message: 'Commande acceptée !', point });
+    res.json({ message: 'Commande acceptée !', pointId: point.id, orderId: order.id })
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('ERREUR accept-point:', e.message)
+    res.status(500).json({ error: e.message })
   }
-});
+})
 
 // ─── Mes commandes (livreur connecté) ─────────────────────────────────────────
-// ✅ Route unique — suppression du doublon qui causait un conflit
 router.get('/me/orders', auth, async (req, res, next) => {
   try {
-    const orders = await DeliveryOrder.findAll({
+    const points = await DeliveryPoint.findAll({
       where: {
-        driverId: req.user.id,
-        status: { [Op.in]: ['planned', 'in_progress', 'done'] }, // ✅ 'planned' inclus au cas où
+        driverAcceptedId: req.user.id,
+        status: { [Op.in]: ['in_progress', 'delivered', 'failed'] },
       },
-      include: [{
-        model: DeliveryPoint,
-        as: 'DeliveryPoints',
-        required: false,
-      }],
       order: [['updatedAt', 'DESC']],
-    });
+    })
 
-    const result = orders.map(o => {
-      const plain = o.toJSON();
-      if (plain.DeliveryPoints) {
-        plain.DeliveryPoints = plain.DeliveryPoints.map(p => {
-          if (typeof p.items === 'string') {
-            try { p.items = JSON.parse(p.items); } catch { p.items = []; }
-          }
-          return p;
-        });
+    const result = points.map(p => {
+      const plain = p.toJSON()
+      if (typeof plain.items === 'string') {
+        try { plain.items = JSON.parse(plain.items) } catch { plain.items = [] }
       }
-      return plain;
-    });
+      return plain
+    })
 
-    res.json(result);
+    // Retourner dans le format attendu par le mobile : tableau de "tournées"
+    // avec DeliveryPoints imbriqués — on simule une tournée par point
+    const formatted = result.map(p => ({
+      id:     p.orderId,
+      date:   p.createdAt,
+      status: p.status,
+      DeliveryPoints: [p],
+    }))
+
+    res.json(formatted)
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    console.error('ERREUR me/orders:', e.message)
+    res.status(500).json({ error: e.message })
   }
-});
+})
 
 // ─── POST ajouter un livreur (gestionnaire uniquement) ────────────────────────
 router.post('/', auth, async (req, res, next) => {

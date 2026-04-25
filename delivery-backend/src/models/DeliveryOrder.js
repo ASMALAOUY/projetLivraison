@@ -3,7 +3,7 @@ const sequelize = require('../config/database');
 
 const DeliveryOrder = sequelize.define('DeliveryOrder', {
   id:         { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
-  driverId:   { type: DataTypes.UUID, allowNull: true },   // null jusqu'à acceptation
+  driverId:   { type: DataTypes.UUID, allowNull: true },
   managerId:  { type: DataTypes.UUID, allowNull: true },
   date:       { type: DataTypes.DATEONLY, allowNull: false },
   status:     {
@@ -12,6 +12,13 @@ const DeliveryOrder = sequelize.define('DeliveryOrder', {
   },
   startedAt:  { type: DataTypes.DATE },
   finishedAt: { type: DataTypes.DATE },
-}, { tableName: 'delivery_orders' });
+}, { 
+  tableName: 'delivery_orders',
+  timestamps: true,
+  //  Désactiver la création automatique des contraintes
+  define: {
+    freezeTableName: true
+  }
+});
 
 module.exports = DeliveryOrder;

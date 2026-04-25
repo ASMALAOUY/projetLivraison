@@ -12,16 +12,16 @@ import StatusBadge from '../components/StatusBadge'
 
 // ─── Données catalogue ────────────────────────────────────────────────────────
 const STEPS = [
-  { key: 'pending', label: 'Confirmée', icon: '📋' },
-  { key: 'in_progress', label: 'En route', icon: '🚴' },
-  { key: 'delivered', label: 'Livrée', icon: '✅' },
+  { key: 'pending',     label: 'Confirmée', icon: '📋' },
+  { key: 'in_progress', label: 'En route',  icon: '🚴' },
+  { key: 'delivered',   label: 'Livrée',    icon: '✅' },
 ]
 
 const STATUS_INFO = {
-  pending: { msg: 'Commande confirmée. Un livreur va prendre en charge votre colis.' },
+  pending:     { msg: 'Commande confirmée. Un livreur va prendre en charge votre colis.' },
   in_progress: { msg: 'Votre livreur est en route ! Suivez-le sur la carte ci-dessous.' },
-  delivered: { msg: 'Livraison effectuée avec succès. Merci de votre confiance !' },
-  failed: { msg: 'La livraison a échoué ou a été annulée.' },
+  delivered:   { msg: 'Livraison effectuée avec succès. Merci de votre confiance !' },
+  failed:      { msg: 'La livraison a échoué ou a été annulée.' },
 }
 
 const CATEGORIES = [
@@ -29,12 +29,12 @@ const CATEGORIES = [
     id: 'cafe', label: 'Café', subtitle: 'Boissons chaudes & froides', accent: '#6F4E37',
     photo: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop',
     items: [
-      { id: 'c1', name: 'Café Marocain', description: 'Cardamome & cannelle', price: 8, photo: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&h=300&fit=crop' },
-      { id: 'c2', name: 'Cappuccino', description: 'Mousse de lait veloutée', price: 15, photo: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&h=300&fit=crop' },
+      { id: 'c1', name: 'Café Marocain',     description: 'Cardamome & cannelle',         price: 8,  photo: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&h=300&fit=crop' },
+      { id: 'c2', name: 'Cappuccino',         description: 'Mousse de lait veloutée',      price: 15, photo: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&h=300&fit=crop' },
       { id: 'c3', name: "Jus d'orange frais", description: 'Pressé minute, 100% naturel', price: 12, photo: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop' },
-      { id: 'c4', name: 'Thé à la menthe', description: 'Gunpowder & menthe fraîche', price: 10, photo: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
-      { id: 'c5', name: 'Smoothie fruits', description: 'Fraise, banane & mangue', price: 18, photo: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400&h=300&fit=crop' },
-      { id: 'c6', name: 'Café Glacé', description: 'Double espresso sur glace', price: 20, photo: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop' },
+      { id: 'c4', name: 'Thé à la menthe',    description: 'Gunpowder & menthe fraîche',  price: 10, photo: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
+      { id: 'c5', name: 'Smoothie fruits',    description: 'Fraise, banane & mangue',     price: 18, photo: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400&h=300&fit=crop' },
+      { id: 'c6', name: 'Café Glacé',         description: 'Double espresso sur glace',   price: 20, photo: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop' },
     ],
   },
   {
@@ -42,62 +42,158 @@ const CATEGORIES = [
     photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop',
     items: [
       { id: 'r1', name: 'Pizza Margherita', description: 'Tomate, mozzarella, basilic', price: 55, photo: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&h=300&fit=crop' },
-      { id: 'r2', name: 'Couscous royal', description: 'Agneau, merguez, légumes', price: 70, photo: 'https://images.unsplash.com/photo-1628294896516-3c88dc6b07af?w=400&h=300&fit=crop' },
-      { id: 'r3', name: 'Tajine poulet', description: 'Citron confit & olives', price: 65, photo: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=300&fit=crop' },
-      { id: 'r4', name: 'Burger classique', description: 'Steak haché, cheddar', price: 50, photo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop' },
-      { id: 'r5', name: 'Pastilla poulet', description: 'Feuilleté sucré-salé', price: 45, photo: 'https://images.unsplash.com/photo-1621501103258-9253c3a5e358?w=400&h=300&fit=crop' },
-      { id: 'r6', name: 'Salade niçoise', description: 'Thon, œuf, olives', price: 35, photo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop' },
+      { id: 'r2', name: 'Couscous royal',   description: 'Agneau, merguez, légumes',   price: 70, photo: 'https://images.unsplash.com/photo-1628294896516-3c88dc6b07af?w=400&h=300&fit=crop' },
+      { id: 'r3', name: 'Tajine poulet',    description: 'Citron confit & olives',     price: 65, photo: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=300&fit=crop' },
+      { id: 'r4', name: 'Burger classique', description: 'Steak haché, cheddar',       price: 50, photo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop' },
+      { id: 'r5', name: 'Pastilla poulet',  description: 'Feuilleté sucré-salé',       price: 45, photo: 'https://images.unsplash.com/photo-1621501103258-9253c3a5e358?w=400&h=300&fit=crop' },
+      { id: 'r6', name: 'Salade niçoise',   description: 'Thon, œuf, olives',          price: 35, photo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop' },
     ],
   },
   {
     id: 'shop', label: 'Shopping', subtitle: 'Colis, courses & cadeaux', accent: '#1A5276',
     photo: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&h=400&fit=crop',
     items: [
-      { id: 's1', name: 'Colis standard', description: "Jusqu'à 5 kg", price: 15, photo: 'https://images.unsplash.com/photo-1595079676601-f1adf5be5dee?w=400&h=300&fit=crop' },
-      { id: 's2', name: 'Colis express', description: 'Livraison en < 1h', price: 30, photo: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&h=300&fit=crop' },
-      { id: 's3', name: 'Documents', description: 'Enveloppes, contrats', price: 10, photo: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=400&h=300&fit=crop' },
+      { id: 's1', name: 'Colis standard',      description: "Jusqu'à 5 kg",          price: 15, photo: 'https://images.unsplash.com/photo-1595079676601-f1adf5be5dee?w=400&h=300&fit=crop' },
+      { id: 's2', name: 'Colis express',        description: 'Livraison en < 1h',     price: 30, photo: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&h=300&fit=crop' },
+      { id: 's3', name: 'Documents',            description: 'Enveloppes, contrats',  price: 10, photo: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=400&h=300&fit=crop' },
       { id: 's4', name: 'Courses alimentaires', description: 'Supermarché, épicerie', price: 20, photo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop' },
-      { id: 's5', name: 'Fleurs & Cadeaux', description: 'Bouquets, coffrets', price: 25, photo: 'https://images.unsplash.com/photo-1487530811015-780f2f08b77a?w=400&h=300&fit=crop' },
-      { id: 's6', name: 'Électronique', description: 'Fragile, assuré', price: 35, photo: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&h=300&fit=crop' },
+      { id: 's5', name: 'Fleurs & Cadeaux',     description: 'Bouquets, coffrets',    price: 25, photo: 'https://images.unsplash.com/photo-1487530811015-780f2f08b77a?w=400&h=300&fit=crop' },
+      { id: 's6', name: 'Électronique',         description: 'Fragile, assuré',       price: 35, photo: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&h=300&fit=crop' },
     ],
   },
   {
     id: 'pharma', label: 'Pharmacie', subtitle: 'Médicaments & soins', accent: '#1D6A3A',
     photo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=400&fit=crop',
     items: [
-      { id: 'p1', name: 'Médicaments ordonnance', description: 'Sur ordonnance valide', price: 12, photo: 'https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=400&h=300&fit=crop' },
-      { id: 'p2', name: 'Paracétamol 500mg', description: 'Boîte de 20 comprimés', price: 8, photo: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=400&h=300&fit=crop' },
-      { id: 'p3', name: 'Crème solaire SPF50+', description: '150ml, résistant eau', price: 45, photo: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop' },
-      { id: 'p4', name: 'Vitamines & compléments', description: 'Vit C, D, magnésium', price: 35, photo: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=400&h=300&fit=crop' },
-      { id: 'p5', name: 'Masques FFP2', description: 'Boîte de 10', price: 15, photo: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&h=300&fit=crop' },
-      { id: 'p6', name: 'Thermomètre digital', description: 'Résultat en 10 secondes', price: 60, photo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop' },
+      { id: 'p1', name: 'Médicaments ordonnance',  description: 'Sur ordonnance valide',    price: 12, photo: 'https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=400&h=300&fit=crop' },
+      { id: 'p2', name: 'Paracétamol 500mg',       description: 'Boîte de 20 comprimés',   price: 8,  photo: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=400&h=300&fit=crop' },
+      { id: 'p3', name: 'Crème solaire SPF50+',    description: '150ml, résistant eau',    price: 45, photo: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop' },
+      { id: 'p4', name: 'Vitamines & compléments', description: 'Vit C, D, magnésium',    price: 35, photo: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=400&h=300&fit=crop' },
+      { id: 'p5', name: 'Masques FFP2',            description: 'Boîte de 10',             price: 15, photo: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&h=300&fit=crop' },
+      { id: 'p6', name: 'Thermomètre digital',     description: 'Résultat en 10 secondes', price: 60, photo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop' },
     ],
   },
 ]
 
 const ALL_ITEMS = CATEGORIES.flatMap(c => c.items)
 
+// ─── RatingModal ──────────────────────────────────────────────────────────────
+function RatingModal({ pointId, driverName, onClose, onSubmit }) {
+  const [rating,  setRating]  = useState(0)
+  const [comment, setComment] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
+
+  const labels = { 1: 'Très mauvais', 2: 'Mauvais', 3: 'Correct', 4: 'Bien', 5: 'Excellent !' }
+
+  const handleSubmit = async () => {
+    if (!rating) { setError('Veuillez choisir une note'); return }
+    setLoading(true)
+    try {
+      await onSubmit(pointId, rating, comment)
+      onClose()
+    } catch (err) {
+      setError(err.response?.data?.error || 'Erreur')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <View style={rStyles.overlay}>
+      <View style={rStyles.modal}>
+        {/* En-tête */}
+        <View style={rStyles.modalHeader}>
+          <Text style={rStyles.modalTitle}>Évaluer la livraison</Text>
+          <Text style={rStyles.modalSub}>
+            Comment s'est passée votre livraison avec {driverName} ?
+          </Text>
+        </View>
+
+        {/* Corps */}
+        <View style={rStyles.modalBody}>
+          {/* Étoiles */}
+          <View style={rStyles.starsRow}>
+            {[1, 2, 3, 4, 5].map(star => (
+              <TouchableOpacity
+                key={star}
+                onPress={() => setRating(star)}
+                style={rStyles.starBtn}
+                activeOpacity={0.7}
+              >
+                <Text style={[rStyles.starText, { color: star <= rating ? '#F59E0B' : '#E5E7EB' }]}>
+                  ★
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Label note */}
+          {rating > 0 && (
+            <Text style={rStyles.ratingLabel}>{labels[rating]}</Text>
+          )}
+
+          {/* Commentaire */}
+          <TextInput
+            style={rStyles.commentInput}
+            value={comment}
+            onChangeText={setComment}
+            placeholder="Laissez un commentaire (optionnel)…"
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={3}
+            textAlignVertical="top"
+          />
+
+          {/* Erreur */}
+          {!!error && <Text style={rStyles.errorText}>{error}</Text>}
+
+          {/* Boutons */}
+          <View style={rStyles.modalBtns}>
+            <TouchableOpacity style={rStyles.cancelBtn} onPress={onClose}>
+              <Text style={rStyles.cancelBtnText}>Plus tard</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[rStyles.submitBtn, (!rating || loading) && { opacity: 0.4 }]}
+              onPress={handleSubmit}
+              disabled={!rating || loading}
+            >
+              {loading
+                ? <ActivityIndicator color="#fff" size="small" />
+                : <Text style={rStyles.submitBtnText}>Envoyer</Text>
+              }
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </View>
+  )
+}
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function ClientTrackingScreen({ navigation }) {
   const { user } = useAuthStore()
 
   // Navigation interne
-  const [view, setView] = useState('list')
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [view,       setView]       = useState('list')
+  const [orders,     setOrders]     = useState([])
+  const [loading,    setLoading]    = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-  const [selected, setSelected] = useState(null)
-  const [driverPos, setDriverPos] = useState(null)
+  const [selected,   setSelected]   = useState(null)
+  const [driverPos,  setDriverPos]  = useState(null)
 
   // Flow commande
-  const [step, setStep] = useState(0)
-  const [activeCat, setActiveCat] = useState(null)
+  const [step,       setStep]       = useState(0)
+  const [activeCat,  setActiveCat]  = useState(null)
   const [activeItem, setActiveItem] = useState(null)
-  const [cart, setCart] = useState({})
-  const [form, setForm] = useState({ address: '', pickupAddress: '', note: '' })
+  const [cart,       setCart]       = useState({})
+  const [form,       setForm]       = useState({ address: '', pickupAddress: '', note: '' })
   const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
+  const [cancelling, setCancelling] = useState(false)
+  const [error,      setError]      = useState('')
+  const [success,    setSuccess]    = useState('')
+
+  // Rating
+  const [ratingModal, setRatingModal] = useState(null)
 
   const posInterval = useRef(null)
   const autoRefresh = useRef(null)
@@ -109,8 +205,13 @@ export default function ClientTrackingScreen({ navigation }) {
   const cartTotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0)
   const cartCount = cartItems.reduce((s, i) => s + i.qty, 0)
 
-  const addItem = (item) => setCart(c => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }))
-  const removeItem = (id) => setCart(c => { const n = { ...c }; if (n[id] > 1) n[id]--; else delete n[id]; return n })
+  const addItem    = (item) => setCart(c => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }))
+  const removeItem = (id)   => setCart(c => {
+    const n = { ...c }
+    if (n[id] > 1) n[id]--
+    else delete n[id]
+    return n
+  })
 
   // ── Déconnexion ──
   const handleLogout = async () => {
@@ -119,14 +220,14 @@ export default function ClientTrackingScreen({ navigation }) {
       'Voulez-vous vraiment vous déconnecter ?',
       [
         { text: 'Annuler', style: 'cancel' },
-        { 
-          text: 'Déconnecter', 
+        {
+          text: 'Déconnecter',
           style: 'destructive',
           onPress: async () => {
             await AsyncStorage.multiRemove(['token', 'user', 'role'])
             navigation.replace('Login')
-          }
-        }
+          },
+        },
       ]
     )
   }
@@ -135,15 +236,12 @@ export default function ClientTrackingScreen({ navigation }) {
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem('token')
-      console.log('🔑 [ClientTracking] Token:', token ? 'PRÉSENT' : 'ABSENT')
-      
       if (!token) {
         Alert.alert('Session expirée', 'Veuillez vous reconnecter', [
-          { text: 'OK', onPress: () => navigation.replace('Login') }
+          { text: 'OK', onPress: () => navigation.replace('Login') },
         ])
         return
       }
-      
       loadOrders()
     }
     checkAuth()
@@ -172,14 +270,23 @@ export default function ClientTrackingScreen({ navigation }) {
   // ── Polling position livreur ──
   useEffect(() => {
     clearInterval(posInterval.current)
-    const driverId = selected?.DeliveryOrder?.driverId
+    // ✅ Chercher driverAcceptedId directement sur le point (priorité),
+    //    puis fallback sur DeliveryOrder.driverId
+    const driverId = selected?.driverAcceptedId
+                  || selected?.DeliveryOrder?.driverId
+                  || selected?.DeliveryOrder?.Driver?.id
+
     if (selected?.status === 'in_progress' && driverId) {
       const fetchPos = () =>
         api.get(`/tracking/position/${driverId}`)
-          .then(r => { if (r.data?.latitude) setDriverPos({ latitude: r.data.latitude, longitude: r.data.longitude }) })
+          .then(r => {
+            if (r.data?.latitude) {
+              setDriverPos({ latitude: r.data.latitude, longitude: r.data.longitude })
+            }
+          })
           .catch(() => {})
       fetchPos()
-      posInterval.current = setInterval(fetchPos, 10000)
+      posInterval.current = setInterval(fetchPos, 5000)  // 5s pour plus de réactivité
     } else {
       setDriverPos(null)
     }
@@ -199,36 +306,30 @@ export default function ClientTrackingScreen({ navigation }) {
 
   // ── Soumettre commande ──
   const handleSubmit = async () => {
-    if (!form.address.trim()) {
-      setError('Adresse de livraison requise')
-      return
-    }
-    
+    if (!form.address.trim()) { setError('Adresse de livraison requise'); return }
+
     const token = await AsyncStorage.getItem('token')
     if (!token) {
-      setError('Vous n\'êtes pas connecté. Veuillez vous reconnecter.')
+      setError("Vous n'êtes pas connecté. Veuillez vous reconnecter.")
       setTimeout(() => navigation.replace('Login'), 2000)
       return
     }
-    
+
     setError('')
     setSubmitting(true)
     try {
       const items = cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, photo: i.photo }))
       await api.post('/client/order', {
-        address: form.address,
-        pickupAddress: form.pickupAddress,
-        note: form.note,
+        address:        form.address,
+        pickupAddress:  form.pickupAddress,
+        note:           form.note,
         items,
-        latitude: 31.6295,
+        latitude:  31.6295,
         longitude: -7.9811,
       })
       setSuccess('Commande passée avec succès !')
       await loadOrders(true)
-      setTimeout(() => {
-        resetForm()
-        setView('list')
-      }, 1500)
+      setTimeout(() => { resetForm(); setView('list') }, 1500)
     } catch (err) {
       console.error('Erreur commande:', err.response?.data)
       setError(err.response?.data?.error || 'Erreur lors de la commande')
@@ -237,9 +338,44 @@ export default function ClientTrackingScreen({ navigation }) {
     }
   }
 
+  // ── Annuler commande ──
+  const handleCancel = (pointId) => {
+    Alert.alert(
+      'Annuler la commande',
+      'Voulez-vous vraiment annuler cette commande ?',
+      [
+        { text: 'Non', style: 'cancel' },
+        {
+          text: 'Oui, annuler',
+          style: 'destructive',
+          onPress: async () => {
+            setCancelling(true)
+            try {
+              await api.patch(`/client/cancel/${pointId}`)
+              await loadOrders(true)
+              setView('list')
+            } catch (err) {
+              Alert.alert('Erreur', err.response?.data?.error || "Erreur lors de l'annulation")
+            } finally {
+              setCancelling(false)
+            }
+          },
+        },
+      ]
+    )
+  }
+
+  // ── Noter livraison ──
+  const handleRate = async (pointId, rating, comment) => {
+    await api.post(`/client/rate/${pointId}`, { rating, comment })
+    await loadOrders(true)
+    // Rafraîchir la commande sélectionnée
+    setSelected(prev => prev ? { ...prev, rating, ratingComment: comment } : prev)
+  }
+
   const activeOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'failed')
-  const pastOrders = orders.filter(o => o.status === 'delivered' || o.status === 'failed')
-  const parseItems = raw => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw || '[]') : [])
+  const pastOrders   = orders.filter(o => o.status === 'delivered'  || o.status === 'failed')
+  const parseItems   = raw => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw || '[]') : [])
 
   // ══════════════════════════════════════════════════════
   // VUE COMMANDE
@@ -402,7 +538,7 @@ export default function ClientTrackingScreen({ navigation }) {
           {step === 2 && (
             <>
               <Text style={styles.stepTitle}>Où livrer ?</Text>
-              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+              {!!error && <Text style={styles.errorText}>{error}</Text>}
 
               <View style={styles.fieldGroup}>
                 <Text style={styles.fieldLabel}>ADRESSE DE RÉCUPÉRATION</Text>
@@ -437,7 +573,11 @@ export default function ClientTrackingScreen({ navigation }) {
               </View>
               <TouchableOpacity
                 style={styles.nextBtn}
-                onPress={() => { if (!form.address.trim()) { setError('Adresse requise'); return } setError(''); setStep(3) }}
+                onPress={() => {
+                  if (!form.address.trim()) { setError('Adresse requise'); return }
+                  setError('')
+                  setStep(3)
+                }}
               >
                 <Text style={styles.nextBtnText}>Continuer →</Text>
               </TouchableOpacity>
@@ -448,8 +588,8 @@ export default function ClientTrackingScreen({ navigation }) {
           {step === 3 && (
             <>
               <Text style={styles.stepTitle}>Résumé de commande</Text>
-              {error && <Text style={styles.errorText}>{error}</Text>}
-              {success && <Text style={styles.successText}>{success}</Text>}
+              {!!error   && <Text style={styles.errorText}>{error}</Text>}
+              {!!success && <Text style={styles.successText}>{success}</Text>}
 
               <View style={styles.summaryCard}>
                 {cartItems.map((item, idx) => (
@@ -471,9 +611,9 @@ export default function ClientTrackingScreen({ navigation }) {
               <View style={styles.summaryCard}>
                 {[
                   { i: '📍', l: 'Récupéré chez', v: form.pickupAddress || 'Entrepôt central' },
-                  { i: '🏠', l: 'Livré à', v: form.address },
-                  { i: '👤', l: 'Destinataire', v: `${user?.name} · ${user?.phone}` },
-                  { i: '🕐', l: 'Délai estimé', v: "Aujourd'hui · 30–60 min" },
+                  { i: '🏠', l: 'Livré à',        v: form.address },
+                  { i: '👤', l: 'Destinataire',   v: `${user?.name} · ${user?.phone}` },
+                  { i: '🕐', l: 'Délai estimé',   v: "Aujourd'hui · 30–60 min" },
                 ].map((r, i) => (
                   <View key={i} style={styles.summaryInfoRow}>
                     <Text style={styles.summaryInfoIcon}>{r.i}</Text>
@@ -485,8 +625,15 @@ export default function ClientTrackingScreen({ navigation }) {
                 ))}
               </View>
 
-              <TouchableOpacity style={[styles.confirmBtn, submitting && styles.btnDisabled]} onPress={handleSubmit} disabled={submitting}>
-                {submitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.confirmBtnText}>Confirmer · {cartTotal} MAD</Text>}
+              <TouchableOpacity
+                style={[styles.confirmBtn, submitting && styles.btnDisabled]}
+                onPress={handleSubmit}
+                disabled={submitting}
+              >
+                {submitting
+                  ? <ActivityIndicator color="#fff" />
+                  : <Text style={styles.confirmBtnText}>Confirmer · {cartTotal} MAD</Text>
+                }
               </TouchableOpacity>
               <Text style={styles.payNote}>Paiement à la livraison</Text>
             </>
@@ -496,37 +643,112 @@ export default function ClientTrackingScreen({ navigation }) {
     )
   }
 
-  // ══════════════════════════════════════════════════════
   // VUE DÉTAIL COMMANDE
-  // ══════════════════════════════════════════════════════
-  if (view === 'detail' && selected) {
-    const info = STATUS_INFO[selected.status] || STATUS_INFO.pending
-    const stepIdx = STEPS.findIndex(s => s.key === selected.status)
-    const items = parseItems(selected.items)
-    const driver = selected.DeliveryOrder?.Driver
+if (view === 'detail' && selected) {
+  const info    = STATUS_INFO[selected.status] || STATUS_INFO.pending
+  const stepIdx = STEPS.findIndex(s => s.key === selected.status)
+  const items   = parseItems(selected.items)
+  const driver  = selected.DeliveryOrder?.Driver
 
-    const statusBg = {
-      pending: '#FEF9C3', in_progress: '#DBEAFE',
-      delivered: '#DCFCE7', failed: '#FEE2E2',
-    }[selected.status] || '#F3F4F6'
+  const canCancel = selected.status === 'pending'
+  const canRate   = selected.status === 'delivered' && !selected.rating
+  const isInProgress = selected.status === 'in_progress'
 
-    return (
-      <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 40 }}>
+  const statusBg = {
+    pending:     '#FEF9C3',
+    in_progress: '#DBEAFE',
+    delivered:   '#DCFCE7',
+    failed:      '#FEE2E2',
+  }[selected.status] || '#F3F4F6'
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#F3F4F6' }}>
+      {/* Modal notation (par-dessus tout) */}
+      {ratingModal && (
+        <RatingModal
+          pointId={ratingModal.pointId}
+          driverName={ratingModal.driverName}
+          onClose={() => setRatingModal(null)}
+          onSubmit={handleRate}
+        />
+      )}
+
+      {/* ScrollView principal */}
+      <ScrollView
+        style={styles.root}
+        contentContainerStyle={{ paddingBottom: isInProgress && driver ? 100 : 40 }}
+      >
         <View style={styles.detailTopBar}>
           <TouchableOpacity onPress={() => setView('list')}>
             <Text style={styles.backLink}>← Mes commandes</Text>
           </TouchableOpacity>
         </View>
 
+        {/* Bannière statut */}
         <View style={[styles.statusBanner, { backgroundColor: statusBg }]}>
           <StatusBadge status={selected.status} />
           <Text style={styles.statusMsg}>{info.msg}</Text>
         </View>
 
+        {canCancel && (
+          <View style={styles.cancelCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.cancelCardTitle}>Annuler la commande</Text>
+              <Text style={styles.cancelCardSub}>Possible avant que le livreur démarre</Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.cancelActionBtn, cancelling && { opacity: 0.4 }]}
+              onPress={() => handleCancel(selected.id)}
+              disabled={cancelling}
+            >
+              <Text style={styles.cancelActionBtnText}>{cancelling ? '…' : '✕ Annuler'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {canRate && (
+          <TouchableOpacity
+            style={styles.rateCard}
+            onPress={() => setRatingModal({
+              pointId:    selected.id,
+              driverName: driver?.name || 'le livreur',
+            })}
+            activeOpacity={0.8}
+          >
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rateCardTitle}>Évaluer votre livraison</Text>
+              <Text style={styles.rateCardSub}>
+                Notez l'expérience avec {driver?.name || 'votre livreur'}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 28 }}>⭐</Text>
+          </TouchableOpacity>
+        )}
+
+        {!!selected.rating && (
+          <View style={styles.ratingDisplay}>
+            <Text style={styles.ratingDisplayTitle}>Votre évaluation</Text>
+            <View style={{ flexDirection: 'row', gap: 3, marginTop: 6 }}>
+              {[1, 2, 3, 4, 5].map(s => (
+                <Text key={s} style={{ fontSize: 22, color: s <= selected.rating ? '#F59E0B' : '#E5E7EB' }}>
+                  ★
+                </Text>
+              ))}
+            </View>
+            {!!selected.ratingComment && (
+              <Text style={styles.ratingComment}>"{selected.ratingComment}"</Text>
+            )}
+          </View>
+        )}
+
+        {/* Progression */}
         {selected.status !== 'failed' && (
           <View style={styles.progressCard}>
             <View style={styles.progressTrack} />
-            <View style={[styles.progressFillAbs, { width: stepIdx === 0 ? '0%' : stepIdx === 1 ? '50%' : '100%' }]} />
+            <View style={[
+              styles.progressFillAbs,
+              { width: stepIdx === 0 ? '0%' : stepIdx === 1 ? '50%' : '100%' },
+            ]} />
             <View style={styles.stepsRow}>
               {STEPS.map((s, i) => (
                 <View key={s.key} style={styles.stepItem}>
@@ -540,6 +762,7 @@ export default function ClientTrackingScreen({ navigation }) {
           </View>
         )}
 
+        {/* Carte GPS */}
         {selected.status === 'in_progress' && (
           <View style={styles.mapCard}>
             <View style={styles.mapCardHeader}>
@@ -557,17 +780,26 @@ export default function ClientTrackingScreen({ navigation }) {
             >
               {driverPos && (
                 <Marker coordinate={driverPos} anchor={{ x: 0.5, y: 0.5 }}>
-                  <View style={styles.driverMarker}><Text style={{ fontSize: 20 }}>🛵</Text></View>
+                  {/* Marqueur scooter avec cercle bleu — comme sur la photo */}
+                  <View style={styles.driverMarkerOuter}>
+                    <View style={styles.driverMarkerInner}>
+                      <Text style={{ fontSize: 18 }}>🛵</Text>
+                    </View>
+                  </View>
                 </Marker>
               )}
               {selected.latitude && selected.longitude && (
-                <Marker coordinate={{ latitude: selected.latitude, longitude: selected.longitude }} pinColor="#EF4444" />
+                <Marker
+                  coordinate={{ latitude: selected.latitude, longitude: selected.longitude }}
+                  pinColor="#EF4444"
+                />
               )}
             </MapView>
             <Text style={styles.mapNote}>Position mise à jour toutes les 10 secondes</Text>
           </View>
         )}
 
+        {/* Articles */}
         {items.length > 0 && (
           <View style={styles.infoCard}>
             <Text style={styles.infoCardTitle}>Articles commandés</Text>
@@ -587,13 +819,17 @@ export default function ClientTrackingScreen({ navigation }) {
           </View>
         )}
 
+        {/* Détails adresse */}
         <View style={styles.infoCard}>
           <Text style={styles.infoCardTitle}>Détails</Text>
           <InfoRowDetail label="🏠 Adresse" value={selected.address} />
-          {selected.pickupAddress && <InfoRowDetail label="📍 Récupéré chez" value={selected.pickupAddress} />}
+          {selected.pickupAddress && (
+            <InfoRowDetail label="📍 Récupéré chez" value={selected.pickupAddress} />
+          )}
         </View>
 
-        {driver && (
+        {/* Livreur dans le scroll seulement si PAS en route */}
+        {driver && !isInProgress && (
           <View style={styles.driverCard}>
             <View style={styles.driverAvatar}>
               <Text style={styles.driverInitials}>
@@ -604,15 +840,39 @@ export default function ClientTrackingScreen({ navigation }) {
               <Text style={styles.driverName}>{driver.name}</Text>
               <Text style={styles.driverVehicle}>{driver.vehicle}</Text>
             </View>
-            <TouchableOpacity style={styles.callBtn} onPress={() => Linking.openURL(`tel:${driver.phone}`)}>
+            <TouchableOpacity
+              style={styles.callBtn}
+              onPress={() => Linking.openURL(`tel:${driver.phone}`)}
+            >
               <Text style={styles.callBtnText}>📞 Appeler</Text>
             </TouchableOpacity>
           </View>
         )}
       </ScrollView>
-    )
-  }
 
+      {/* ── Carte livreur FIXE en bas — seulement si "en route" ── */}
+      {isInProgress && driver && (
+        <View style={styles.driverCardSticky}>
+          <View style={styles.driverAvatar}>
+            <Text style={styles.driverInitials}>
+              {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.driverName}>{driver.name}</Text>
+            <Text style={styles.driverVehicle}>{driver.vehicle || 'Moto'}</Text>
+          </View>
+          <TouchableOpacity
+            style={styles.callBtnLarge}
+            onPress={() => Linking.openURL(`tel:${driver.phone}`)}
+          >
+            <Text style={styles.callBtnLargeText}>📞 Appeler</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </View>
+  )
+}
   // ══════════════════════════════════════════════════════
   // VUE LISTE
   // ══════════════════════════════════════════════════════
@@ -655,22 +915,40 @@ export default function ClientTrackingScreen({ navigation }) {
                     <Text style={styles.sectionTitle}>EN COURS</Text>
                     {activeOrders.map(order => {
                       const stepIdx = STEPS.findIndex(s => s.key === order.status)
-                      const items = parseItems(order.items)
+                      const items   = parseItems(order.items)
                       return (
-                        <TouchableOpacity key={order.id} style={styles.activeOrderCard} onPress={() => { setSelected(order); setView('detail') }}>
+                        <TouchableOpacity
+                          key={order.id}
+                          style={styles.activeOrderCard}
+                          onPress={() => { setSelected(order); setView('detail') }}
+                        >
                           <View style={styles.activeOrderTop}>
                             <View style={styles.pulseBlue} />
                             <StatusBadge status={order.status} />
-                            {order.status === 'in_progress' && <Text style={styles.enRouteText}>🚴 En route</Text>}
+                            {order.status === 'in_progress' && (
+                              <Text style={styles.enRouteText}>🚴 En route</Text>
+                            )}
+                            {order.status === 'pending' && (
+                              <Text style={styles.annulableText}>Annulable</Text>
+                            )}
                             <Text style={styles.chevron}>›</Text>
                           </View>
                           <View style={styles.thumbsRow}>
-                            {items.slice(0, 4).map((item, i) => item.photo && <Image key={i} source={{ uri: item.photo }} style={styles.orderThumb} />)}
+                            {items.slice(0, 4).map((item, i) =>
+                              item.photo
+                                ? <Image key={i} source={{ uri: item.photo }} style={styles.orderThumb} />
+                                : null
+                            )}
                           </View>
                           <Text style={styles.orderAddr} numberOfLines={1}>🏠 {order.address}</Text>
                           {order.totalPrice && <Text style={styles.orderPrice}>{order.totalPrice} MAD</Text>}
                           <View style={styles.progressMini}>
-                            {STEPS.map((s, i) => <View key={s.key} style={[styles.progressMiniStep, i <= stepIdx && styles.progressMiniStepActive]} />)}
+                            {STEPS.map((s, i) => (
+                              <View
+                                key={s.key}
+                                style={[styles.progressMiniStep, i <= stepIdx && styles.progressMiniStepActive]}
+                              />
+                            ))}
                           </View>
                         </TouchableOpacity>
                       )
@@ -682,15 +960,36 @@ export default function ClientTrackingScreen({ navigation }) {
                   <View style={styles.section}>
                     <Text style={styles.sectionTitle}>HISTORIQUE</Text>
                     {pastOrders.map(order => {
-                      const items = parseItems(order.items)
+                      const items    = parseItems(order.items)
+                      const hasRated = !!order.rating
                       return (
-                        <TouchableOpacity key={order.id} style={styles.pastOrderCard} onPress={() => { setSelected(order); setView('detail') }}>
+                        <TouchableOpacity
+                          key={order.id}
+                          style={styles.pastOrderCard}
+                          onPress={() => { setSelected(order); setView('detail') }}
+                        >
                           <View style={styles.thumbsRow}>
-                            {items.slice(0, 3).map((item, i) => item.photo && <Image key={i} source={{ uri: item.photo }} style={styles.orderThumb} />)}
+                            {items.slice(0, 3).map((item, i) =>
+                              item.photo
+                                ? <Image key={i} source={{ uri: item.photo }} style={styles.orderThumb} />
+                                : null
+                            )}
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={styles.orderAddr} numberOfLines={1}>{order.address}</Text>
-                            {order.totalPrice && <Text style={styles.orderPrice2}>{order.totalPrice} MAD</Text>}
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                              {order.totalPrice && (
+                                <Text style={styles.orderPrice2}>{order.totalPrice} MAD</Text>
+                              )}
+                              {order.status === 'delivered' && !hasRated && (
+                                <Text style={styles.toRateText}>⭐ À noter</Text>
+                              )}
+                              {hasRated && (
+                                <Text style={styles.ratedStars}>
+                                  {'★'.repeat(order.rating)}{'☆'.repeat(5 - order.rating)}
+                                </Text>
+                              )}
+                            </View>
                           </View>
                           <View style={styles.pastRight}>
                             <StatusBadge status={order.status} size="sm" />
@@ -705,7 +1004,13 @@ export default function ClientTrackingScreen({ navigation }) {
             )}
           </View>
         )}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); loadOrders() }} colors={['#2563EB']} />}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => { setRefreshing(true); loadOrders() }}
+            colors={['#2563EB']}
+          />
+        }
         contentContainerStyle={{ paddingBottom: 40 }}
       />
     </View>
@@ -726,196 +1031,320 @@ function InfoRowDetail({ label, value }) {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#F3F4F6' },
 
+  // Order header
   orderHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14,
     backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
   },
-  backLink: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
-  progressBar: { flex: 1, height: 6, backgroundColor: '#E5E7EB', borderRadius: 3, overflow: 'hidden' },
-  progressFill: { height: '100%', backgroundColor: '#2563EB', borderRadius: 3 },
+  backLink:      { fontSize: 14, fontWeight: '600', color: '#6B7280' },
+  progressBar:   { flex: 1, height: 6, backgroundColor: '#E5E7EB', borderRadius: 3, overflow: 'hidden' },
+  progressFill:  { height: '100%', backgroundColor: '#2563EB', borderRadius: 3 },
   progressLabel: { fontSize: 12, color: '#9CA3AF' },
-  orderScroll: { flex: 1 },
-  orderContent: { padding: 20, paddingBottom: 40 },
-  stepTitle: { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 4 },
-  stepSub: { fontSize: 14, color: '#6B7280', marginBottom: 20 },
+  orderScroll:   { flex: 1 },
+  orderContent:  { padding: 20, paddingBottom: 40 },
+  stepTitle:     { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 4 },
+  stepSub:       { fontSize: 14, color: '#6B7280', marginBottom: 20 },
 
-  catsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  catCard: { width: '47%', height: 140, borderRadius: 18, overflow: 'hidden', position: 'relative' },
-  catPhoto: { width: '100%', height: '100%', position: 'absolute' },
+  // Categories grid
+  catsGrid:   { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
+  catCard:    { width: '47%', height: 140, borderRadius: 18, overflow: 'hidden', position: 'relative' },
+  catPhoto:   { width: '100%', height: '100%', position: 'absolute' },
   catOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
   catTextBox: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12 },
-  catLabel: { color: '#fff', fontSize: 15, fontWeight: '800' },
-  catSub: { color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 },
+  catLabel:   { color: '#fff', fontSize: 15, fontWeight: '800' },
+  catSub:     { color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 },
 
-  catTabs: { marginBottom: 16 },
-  catTab: { borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginRight: 8 },
+  // Category tabs
+  catTabs:    { marginBottom: 16 },
+  catTab:     { borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginRight: 8 },
   catTabText: { fontSize: 13, fontWeight: '600', color: '#374151' },
 
-  itemsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
-  itemCard: { width: '47%', backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6' },
-  itemPhoto: { width: '100%', height: 110 },
-  itemQtyBadge: { position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  itemQtyBadgeText: { color: '#fff', fontSize: 12, fontWeight: '800' },
-  itemInfo: { padding: 10 },
-  itemName: { fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  itemDesc: { fontSize: 11, color: '#9CA3AF', marginBottom: 8 },
-  itemFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  itemPrice: { fontSize: 14, fontWeight: '800' },
-  addSmBtn: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  addSmBtnText: { color: '#fff', fontSize: 20, fontWeight: '700', lineHeight: 22 },
+  // Items grid
+  itemsGrid:       { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+  itemCard:        { width: '47%', backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6' },
+  itemPhoto:       { width: '100%', height: 110 },
+  itemQtyBadge:    { position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  itemQtyBadgeText:{ color: '#fff', fontSize: 12, fontWeight: '800' },
+  itemInfo:        { padding: 10 },
+  itemName:        { fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 2 },
+  itemDesc:        { fontSize: 11, color: '#9CA3AF', marginBottom: 8 },
+  itemFooter:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  itemPrice:       { fontSize: 14, fontWeight: '800' },
+  addSmBtn:        { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  addSmBtnText:    { color: '#fff', fontSize: 20, fontWeight: '700', lineHeight: 22 },
+// Marqueur scooter carte — cercle bleu comme sur la photo
+driverMarkerOuter: {
+  width: 52,
+  height: 52,
+  borderRadius: 26,
+  borderWidth: 3,
+  borderColor: '#2563EB',
+  backgroundColor: 'rgba(37,99,235,0.15)',
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+driverMarkerInner: {
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: '#fff',
+  alignItems: 'center',
+  justifyContent: 'center',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 4,
+  elevation: 4,
+},
 
-  qtyMini: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  qtyMiniBtn: { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' },
+// Carte livreur fixe en bas (status in_progress)
+driverCardSticky: {
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  right: 0,
+  backgroundColor: '#fff',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 14,
+  paddingHorizontal: 16,
+  paddingVertical: 14,
+  paddingBottom: 24,   // safe area iOS
+  borderTopWidth: 1,
+  borderTopColor: '#E5E7EB',
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: -3 },
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  elevation: 10,
+},
+callBtnLarge: {
+  backgroundColor: '#22C55E',
+  paddingHorizontal: 20,
+  paddingVertical: 13,
+  borderRadius: 14,
+},
+callBtnLargeText: {
+  color: '#fff',
+  fontSize: 14,
+  fontWeight: '800',
+},
+  // Qty mini
+  qtyMini:        { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  qtyMiniBtn:     { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' },
   qtyMiniBtnText: { fontSize: 14, fontWeight: '700' },
-  qtyMiniVal: { fontSize: 13, fontWeight: '800', minWidth: 16, textAlign: 'center' },
+  qtyMiniVal:     { fontSize: 13, fontWeight: '800', minWidth: 16, textAlign: 'center' },
 
+  // Cart bar
   cartBar: {
     backgroundColor: '#2563EB', borderRadius: 18, paddingVertical: 16, paddingHorizontal: 24,
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8,
     shadowColor: '#2563EB', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6,
   },
-  cartBarLeft: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  cartBarLeft:  { color: '#fff', fontSize: 15, fontWeight: '700' },
   cartBarRight: { color: '#fff', fontSize: 15, fontWeight: '700' },
 
-  fieldGroup: { marginBottom: 16 },
-  fieldLabel: { fontSize: 11, fontWeight: '700', color: '#6B7280', letterSpacing: 0.5, marginBottom: 6 },
-  input: { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: '#111827', backgroundColor: '#fff' },
-  errorText: { color: '#DC2626', fontSize: 13, marginBottom: 12 },
-  successText: { color: '#16A34A', fontSize: 13, fontWeight: '600', marginBottom: 12 },
-  nextBtn: { backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  // Form
+  fieldGroup:   { marginBottom: 16 },
+  fieldLabel:   { fontSize: 11, fontWeight: '700', color: '#6B7280', letterSpacing: 0.5, marginBottom: 6 },
+  input:        { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: '#111827', backgroundColor: '#fff' },
+  errorText:    { color: '#DC2626', fontSize: 13, marginBottom: 12 },
+  successText:  { color: '#16A34A', fontSize: 13, fontWeight: '600', marginBottom: 12 },
+  nextBtn:      { backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
+  nextBtnText:  { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  summaryCard: { backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', marginBottom: 14, borderWidth: 1, borderColor: '#F3F4F6' },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  summaryRowBorder: { borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  summaryThumb: { width: 52, height: 52, borderRadius: 12 },
-  summaryName: { fontSize: 13, fontWeight: '600', color: '#111827' },
-  summaryQty: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
-  summaryPrice: { fontSize: 13, fontWeight: '700', color: '#2563EB' },
-  summaryTotal: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+  // Summary
+  summaryCard:       { backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', marginBottom: 14, borderWidth: 1, borderColor: '#F3F4F6' },
+  summaryRow:        { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
+  summaryRowBorder:  { borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
+  summaryThumb:      { width: 52, height: 52, borderRadius: 12 },
+  summaryName:       { fontSize: 13, fontWeight: '600', color: '#111827' },
+  summaryQty:        { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  summaryPrice:      { fontSize: 13, fontWeight: '700', color: '#2563EB' },
+  summaryTotal:      { flexDirection: 'row', justifyContent: 'space-between', padding: 14, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F3F4F6' },
   summaryTotalLabel: { fontSize: 15, fontWeight: '800', color: '#111827' },
-  summaryTotalVal: { fontSize: 16, fontWeight: '800', color: '#2563EB' },
-  summaryInfoRow: { flexDirection: 'row', gap: 12, padding: 14, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  summaryInfoIcon: { fontSize: 18, marginTop: 2 },
-  summaryInfoLabel: { fontSize: 11, color: '#9CA3AF' },
-  summaryInfoVal: { fontSize: 14, fontWeight: '600', color: '#111827', marginTop: 2 },
-  confirmBtn: { backgroundColor: '#2563EB', borderRadius: 16, paddingVertical: 17, alignItems: 'center', marginBottom: 10 },
-  confirmBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
-  payNote: { textAlign: 'center', fontSize: 12, color: '#9CA3AF' },
-  btnDisabled: { opacity: 0.5 },
+  summaryTotalVal:   { fontSize: 16, fontWeight: '800', color: '#2563EB' },
+  summaryInfoRow:    { flexDirection: 'row', gap: 12, padding: 14, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
+  summaryInfoIcon:   { fontSize: 18, marginTop: 2 },
+  summaryInfoLabel:  { fontSize: 11, color: '#9CA3AF' },
+  summaryInfoVal:    { fontSize: 14, fontWeight: '600', color: '#111827', marginTop: 2 },
+  confirmBtn:        { backgroundColor: '#2563EB', borderRadius: 16, paddingVertical: 17, alignItems: 'center', marginBottom: 10 },
+  confirmBtnText:    { color: '#fff', fontSize: 16, fontWeight: '800' },
+  payNote:           { textAlign: 'center', fontSize: 12, color: '#9CA3AF' },
+  btnDisabled:       { opacity: 0.5 },
 
-  detailPhoto: { width: '100%', height: 260 },
-  detailBack: { position: 'absolute', top: 48, left: 16, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 20, width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  detailBackText: { fontSize: 20, color: '#111827', fontWeight: '700' },
-  detailBody: { flex: 1, padding: 20 },
-  detailInfo: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
-  detailName: { fontSize: 22, fontWeight: '800', color: '#111827', flex: 1 },
-  detailPrice: { fontSize: 20, fontWeight: '800', marginLeft: 12, marginTop: 2 },
-  detailDesc: { fontSize: 14, color: '#6B7280', lineHeight: 22, marginBottom: 24 },
-  qtyRow: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
-  qtyLabel: { fontSize: 15, fontWeight: '600', color: '#374151' },
-  qtyControl: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 30, paddingHorizontal: 12, paddingVertical: 8, gap: 16 },
-  qtyBtn: { width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
-  qtyBtnText: { fontSize: 22, fontWeight: '700', color: '#111827' },
-  qtyVal: { fontSize: 20, fontWeight: '800', color: '#111827', minWidth: 24, textAlign: 'center' },
-  qtyTotal: { fontSize: 14, color: '#6B7280' },
-  addBtn: { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  addBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  // Detail article
+  detailPhoto:     { width: '100%', height: 260 },
+  detailBack:      { position: 'absolute', top: 48, left: 16, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 20, width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
+  detailBackText:  { fontSize: 20, color: '#111827', fontWeight: '700' },
+  detailBody:      { flex: 1, padding: 20 },
+  detailInfo:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  detailName:      { fontSize: 22, fontWeight: '800', color: '#111827', flex: 1 },
+  detailPrice:     { fontSize: 20, fontWeight: '800', marginLeft: 12, marginTop: 2 },
+  detailDesc:      { fontSize: 14, color: '#6B7280', lineHeight: 22, marginBottom: 24 },
+  qtyRow:          { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
+  qtyLabel:        { fontSize: 15, fontWeight: '600', color: '#374151' },
+  qtyControl:      { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 30, paddingHorizontal: 12, paddingVertical: 8, gap: 16 },
+  qtyBtn:          { width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
+  qtyBtnText:      { fontSize: 22, fontWeight: '700', color: '#111827' },
+  qtyVal:          { fontSize: 20, fontWeight: '800', color: '#111827', minWidth: 24, textAlign: 'center' },
+  qtyTotal:        { fontSize: 14, color: '#6B7280' },
+  addBtn:          { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
+  addBtnText:      { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  listHeader: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    paddingHorizontal: 16, 
-    paddingTop: 52, 
-    paddingBottom: 16, 
-    backgroundColor: '#fff', 
-    borderBottomWidth: 1, 
-    borderBottomColor: '#F3F4F6' 
+  // List header
+  listHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 16,
+    backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
   },
-  headerButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  listTitle: { fontSize: 24, fontWeight: '800', color: '#111827' },
-  listSub: { fontSize: 13, color: '#6B7280', marginTop: 2 },
-  orderNowBtn: { backgroundColor: '#2563EB', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10 },
-  orderNowText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  logoutBtn: {
-    backgroundColor: '#EF4444',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  headerButtons: { flexDirection: 'row', gap: 10 },
+  listTitle:     { fontSize: 24, fontWeight: '800', color: '#111827' },
+  listSub:       { fontSize: 13, color: '#6B7280', marginTop: 2 },
+  orderNowBtn:   { backgroundColor: '#2563EB', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10 },
+  orderNowText:  { color: '#fff', fontSize: 14, fontWeight: '700' },
+  logoutBtn:     { backgroundColor: '#EF4444', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' },
   logoutBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  section: { paddingHorizontal: 16, marginTop: 20 },
-  sectionTitle: { fontSize: 11, fontWeight: '800', color: '#9CA3AF', letterSpacing: 1, marginBottom: 10 },
-  activeOrderCard: { backgroundColor: '#fff', borderRadius: 20, padding: 16, borderWidth: 2, borderColor: '#BFDBFE', marginBottom: 12 },
-  activeOrderTop: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  pulseBlue: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6' },
-  enRouteText: { fontSize: 12, color: '#2563EB', fontWeight: '600', marginLeft: 4 },
-  chevron: { marginLeft: 'auto', fontSize: 18, color: '#D1D5DB' },
-  thumbsRow: { flexDirection: 'row', gap: 6, marginBottom: 10 },
-  orderThumb: { width: 42, height: 42, borderRadius: 10 },
-  orderAddr: { fontSize: 13, color: '#6B7280', marginBottom: 4 },
-  orderPrice: { fontSize: 14, fontWeight: '800', color: '#2563EB', marginBottom: 10 },
-  progressMini: { flexDirection: 'row', gap: 6 },
-  progressMiniStep: { flex: 1, height: 5, borderRadius: 3, backgroundColor: '#F3F4F6' },
-  progressMiniStepActive: { backgroundColor: '#3B82F6' },
+  // Sections list
+  section:              { paddingHorizontal: 16, marginTop: 20 },
+  sectionTitle:         { fontSize: 11, fontWeight: '800', color: '#9CA3AF', letterSpacing: 1, marginBottom: 10 },
+  activeOrderCard:      { backgroundColor: '#fff', borderRadius: 20, padding: 16, borderWidth: 2, borderColor: '#BFDBFE', marginBottom: 12 },
+  activeOrderTop:       { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  pulseBlue:            { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6' },
+  enRouteText:          { fontSize: 12, color: '#2563EB', fontWeight: '600', marginLeft: 4 },
+  annulableText:        { fontSize: 12, color: '#F59E0B', fontWeight: '600', marginLeft: 4 },
+  chevron:              { marginLeft: 'auto', fontSize: 18, color: '#D1D5DB' },
+  thumbsRow:            { flexDirection: 'row', gap: 6, marginBottom: 10 },
+  orderThumb:           { width: 42, height: 42, borderRadius: 10 },
+  orderAddr:            { fontSize: 13, color: '#6B7280', marginBottom: 4 },
+  orderPrice:           { fontSize: 14, fontWeight: '800', color: '#2563EB', marginBottom: 10 },
+  progressMini:         { flexDirection: 'row', gap: 6 },
+  progressMiniStep:     { flex: 1, height: 5, borderRadius: 3, backgroundColor: '#F3F4F6' },
+  progressMiniStepActive:{ backgroundColor: '#3B82F6' },
+  pastOrderCard:        { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F3F4F6', marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  pastRight:            { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  orderPrice2:          { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  toRateText:           { fontSize: 12, color: '#F59E0B', fontWeight: '700' },
+  ratedStars:           { fontSize: 13, color: '#F59E0B' },
+  emptyList:            { alignItems: 'center', paddingVertical: 60, gap: 16 },
+  emptyIcon:            { fontSize: 52 },
+  emptyTitle:           { fontSize: 18, fontWeight: '700', color: '#374151' },
 
-  pastOrderCard: { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F3F4F6', marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  pastRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  orderPrice2: { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  // Detail view
+  detailTopBar:  { paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  statusBanner:  { margin: 16, borderRadius: 18, padding: 16, gap: 10 },
+  statusMsg:     { fontSize: 14, color: '#374151', lineHeight: 20 },
 
-  emptyList: { alignItems: 'center', paddingVertical: 60, gap: 16 },
-  emptyIcon: { fontSize: 52 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#374151' },
+  // Cancel card
+  cancelCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#fff', borderRadius: 18,
+    marginHorizontal: 16, marginBottom: 14,
+    padding: 16, borderWidth: 1, borderColor: '#FEE2E2',
+  },
+  cancelCardTitle:    { fontSize: 14, fontWeight: '700', color: '#111827' },
+  cancelCardSub:      { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
+  cancelActionBtn:    { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
+  cancelActionBtnText:{ fontSize: 13, fontWeight: '700', color: '#DC2626' },
 
-  detailTopBar: { paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  statusBanner: { margin: 16, borderRadius: 18, padding: 16, gap: 10 },
-  statusMsg: { fontSize: 14, color: '#374151', lineHeight: 20 },
+  // Rate card
+  rateCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    backgroundColor: '#FFFBEB', borderRadius: 18,
+    marginHorizontal: 16, marginBottom: 14,
+    padding: 16, borderWidth: 1, borderColor: '#FDE68A',
+  },
+  rateCardTitle: { fontSize: 14, fontWeight: '700', color: '#92400E' },
+  rateCardSub:   { fontSize: 12, color: '#B45309', marginTop: 2 },
 
-  progressCard: { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, padding: 20, marginBottom: 14, position: 'relative' },
-  progressTrack: { position: 'absolute', top: 40, left: 40, right: 40, height: 3, backgroundColor: '#E5E7EB' },
+  // Rating display (note existante)
+  ratingDisplay: {
+    backgroundColor: '#FFFBEB', borderRadius: 18,
+    marginHorizontal: 16, marginBottom: 14,
+    padding: 16, borderWidth: 1, borderColor: '#FDE68A',
+  },
+  ratingDisplayTitle: { fontSize: 13, fontWeight: '700', color: '#92400E' },
+  ratingComment:      { fontSize: 12, color: '#B45309', marginTop: 8, fontStyle: 'italic' },
+
+  // Progress card (detail)
+  progressCard:    { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, padding: 20, marginBottom: 14, position: 'relative' },
+  progressTrack:   { position: 'absolute', top: 40, left: 40, right: 40, height: 3, backgroundColor: '#E5E7EB' },
   progressFillAbs: { position: 'absolute', top: 40, left: 40, height: 3, backgroundColor: '#3B82F6', borderRadius: 2 },
-  stepsRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  stepItem: { alignItems: 'center', gap: 8, flex: 1 },
-  stepDot: { width: 42, height: 42, borderRadius: 21, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
-  stepDotActive: { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  stepIcon: { fontSize: 18 },
-  stepLabel: { fontSize: 11, color: '#9CA3AF', fontWeight: '600', textAlign: 'center' },
+  stepsRow:        { flexDirection: 'row', justifyContent: 'space-between' },
+  stepItem:        { alignItems: 'center', gap: 8, flex: 1 },
+  stepDot:         { width: 42, height: 42, borderRadius: 21, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
+  stepDotActive:   { backgroundColor: '#2563EB', borderColor: '#2563EB' },
+  stepIcon:        { fontSize: 18 },
+  stepLabel:       { fontSize: 11, color: '#9CA3AF', fontWeight: '600', textAlign: 'center' },
   stepLabelActive: { color: '#2563EB' },
 
-  mapCard: { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, marginBottom: 14, overflow: 'hidden' },
+  // Map card
+  mapCard:       { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, marginBottom: 14, overflow: 'hidden' },
   mapCardHeader: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 8 },
-  liveGreen: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E' },
-  mapCardTitle: { fontSize: 14, fontWeight: '700', color: '#111827', flex: 1 },
-  mapCardSub: { fontSize: 12, color: '#9CA3AF' },
-  map: { height: 220 },
-  mapNote: { textAlign: 'center', fontSize: 12, color: '#9CA3AF', padding: 10 },
-  driverMarker: { backgroundColor: '#fff', borderRadius: 20, padding: 4, borderWidth: 2, borderColor: '#2563EB' },
+  liveGreen:     { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E' },
+  mapCardTitle:  { fontSize: 14, fontWeight: '700', color: '#111827', flex: 1 },
+  mapCardSub:    { fontSize: 12, color: '#9CA3AF' },
+  map:           { height: 220 },
+  mapNote:       { textAlign: 'center', fontSize: 12, color: '#9CA3AF', padding: 10 },
+  driverMarker:  { backgroundColor: '#fff', borderRadius: 20, padding: 4, borderWidth: 2, borderColor: '#2563EB' },
 
-  infoCard: { backgroundColor: '#fff', borderRadius: 18, marginHorizontal: 16, marginBottom: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6' },
-  infoCardTitle: { fontSize: 14, fontWeight: '700', color: '#374151', padding: 16, paddingBottom: 8 },
-  itemRow2: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
+  // Info cards
+  infoCard:       { backgroundColor: '#fff', borderRadius: 18, marginHorizontal: 16, marginBottom: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6' },
+  infoCardTitle:  { fontSize: 14, fontWeight: '700', color: '#374151', padding: 16, paddingBottom: 8 },
+  itemRow2:       { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   itemRow2Border: { borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  itemThumb2: { width: 44, height: 44, borderRadius: 10 },
-  itemRow2Name: { flex: 1, fontSize: 13, color: '#374151', fontWeight: '500' },
-  itemRow2Price: { fontSize: 14, fontWeight: '700', color: '#2563EB' },
+  itemThumb2:     { width: 44, height: 44, borderRadius: 10 },
+  itemRow2Name:   { flex: 1, fontSize: 13, color: '#374151', fontWeight: '500' },
+  itemRow2Price:  { fontSize: 14, fontWeight: '700', color: '#2563EB' },
+  infoRowD:       { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
+  infoLabelD:     { fontSize: 13, color: '#6B7280', flex: 1 },
+  infoValueD:     { fontSize: 13, fontWeight: '600', color: '#111827', flex: 2, textAlign: 'right' },
 
-  infoRowD: { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  infoLabelD: { fontSize: 13, color: '#6B7280', flex: 1 },
-  infoValueD: { fontSize: 13, fontWeight: '600', color: '#111827', flex: 2, textAlign: 'right' },
-
-  driverCard: { backgroundColor: '#fff', borderRadius: 18, marginHorizontal: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: '#F3F4F6' },
-  driverAvatar: { width: 50, height: 50, borderRadius: 25, backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center' },
+  // Driver card
+  driverCard:     { backgroundColor: '#fff', borderRadius: 18, marginHorizontal: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: '#F3F4F6' },
+  driverAvatar:   { width: 50, height: 50, borderRadius: 25, backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center' },
   driverInitials: { fontSize: 16, fontWeight: '800', color: '#1D4ED8' },
-  driverName: { fontSize: 15, fontWeight: '700', color: '#111827' },
-  driverVehicle: { fontSize: 13, color: '#9CA3AF', marginTop: 2 },
-  callBtn: { backgroundColor: '#22C55E', paddingHorizontal: 16, paddingVertical: 11, borderRadius: 12 },
-  callBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+  driverName:     { fontSize: 15, fontWeight: '700', color: '#111827' },
+  driverVehicle:  { fontSize: 13, color: '#9CA3AF', marginTop: 2 },
+  callBtn:        { backgroundColor: '#22C55E', paddingHorizontal: 16, paddingVertical: 11, borderRadius: 12 },
+  callBtnText:    { color: '#fff', fontSize: 13, fontWeight: '700' },
+})
+
+// ─── Styles RatingModal ───────────────────────────────────────────────────────
+const rStyles = StyleSheet.create({
+  overlay: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    zIndex: 100,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+  },
+  modal:       { backgroundColor: '#fff', borderRadius: 24, width: '100%', overflow: 'hidden' },
+  modalHeader: { backgroundColor: '#2563EB', paddingHorizontal: 24, paddingVertical: 20, alignItems: 'center' },
+  modalTitle:  { color: '#fff', fontSize: 16, fontWeight: '800' },
+  modalSub:    { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 4, textAlign: 'center' },
+  modalBody:   { padding: 24 },
+
+  starsRow:    { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 8 },
+  starBtn:     { padding: 4 },
+  starText:    { fontSize: 40 },
+  ratingLabel: { textAlign: 'center', fontSize: 14, fontWeight: '700', color: '#D97706', marginBottom: 18 },
+
+  commentInput: {
+    borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14,
+    paddingHorizontal: 14, paddingVertical: 12,
+    fontSize: 14, color: '#111827',
+    minHeight: 80, marginBottom: 16,
+  },
+  errorText: { color: '#DC2626', fontSize: 13, marginBottom: 12 },
+
+  modalBtns:     { flexDirection: 'row', gap: 12 },
+  cancelBtn:     { flex: 1, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  cancelBtnText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
+  submitBtn:     { flex: 1, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  submitBtnText: { fontSize: 14, fontWeight: '800', color: '#fff' },
 })

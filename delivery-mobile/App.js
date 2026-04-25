@@ -9,15 +9,16 @@ import RegisterScreen from './src/screens/RegisterScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import MapScreen from './src/screens/MapScreen';
 import ClientTrackingScreen from './src/screens/ClientTrackingScreen';
+import LandingPage from './src/screens/LandingPage';
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  const { user, initialize } = useAuthStore();  // ← Utilisez initialize
+  const { user, initialize } = useAuthStore();
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    initialize().finally(() => setReady(true));  // ← initialize au lieu de loadFromStorage
+    initialize().finally(() => setReady(true));
   }, []);
 
   if (!ready) {
@@ -28,19 +29,28 @@ export default function App() {
     );
   }
 
-  const getInitialRoute = () => {
-    if (!user) return 'Login';
-    if (user.role === 'driver') return 'Home';
-    if (user.role === 'client') return 'ClientTracking';
-    return 'Login';
-  };
+  // Utilisateur connecté
+  if (user) {
+    const initialRoute = user.role === 'driver' ? 'Home' : 'ClientTracking';
+    return (
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName={initialRoute} screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="Home" component={HomeScreen} />
+          <Stack.Screen name="Map" component={MapScreen} />
+          <Stack.Screen name="ClientTracking" component={ClientTrackingScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Landing" component={LandingPage} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
 
+  // Utilisateur non connecté - Page d'accueil publique
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={getInitialRoute()}
-        screenOptions={{ headerShown: false }}
-      >
+      <Stack.Navigator initialRouteName="Landing" screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Landing" component={LandingPage} />
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />

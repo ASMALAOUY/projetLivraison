@@ -1,8 +1,9 @@
 const router = require('express').Router();
 const auth   = require('../middlewares/auth');
-const { DeliveryPoint, DeliveryOrder, User } = require('../models');
+const { DeliveryPoint, DeliveryOrder, User, Driver } = require('../models');
 const { Op } = require('sequelize');
 
+// ─── Créer une commande ───────────────────────────────────────────────────────
 router.post('/order', auth, async (req, res, next) => {
   try {
     const { address, latitude, longitude, note, items, pickupAddress } = req.body;
@@ -11,44 +12,22 @@ router.post('/order', auth, async (req, res, next) => {
     if (!items?.length) return res.status(400).json({ error: 'Ajoutez au moins un article' });
 
     const client  = await User.findByPk(req.user.id);
-    const driver  = await User.findOne({ where: { role: 'driver', status: 'active' } });
-    const manager = await User.findOne({ where: { role: 'manager', status: 'active' } });
+    if (!client)  return res.status(404).json({ error: 'Client introuvable' });
 
-    if (!driver) return res.status(503).json({
-      error: 'Aucun livreur disponible.',
-    });
+    const manager = await User.findOne({ where: { role: 'manager', status: 'active' } });
 
     const today      = new Date().toISOString().split('T')[0];
     const totalPrice = items.reduce((sum, i) => sum + (i.price * i.qty), 0);
 
-    // ── Chercher une tournée existante pour ce livreur aujourd'hui ──
-    let order = await DeliveryOrder.findOne({
-      where: {
-        driverId: driver.id,
-        date:     today,
-        status:   'planned',
-      },
+    const order = await DeliveryOrder.create({
+      driverId:  null,
+      managerId: manager?.id || null,
+      date:      today,
+      status:    'planned',
     });
 
-    // ── Sinon créer une nouvelle tournée ──
-    if (!order) {
-      order = await DeliveryOrder.create({
-        driverId:  driver.id,
-        managerId: manager?.id || null,
-        date:      today,
-        status:    'planned',
-      });
-      console.log('Nouvelle tournée créée:', order.id);
-    } else {
-      console.log('Tournée existante utilisée:', order.id);
-    }
+    const count = await DeliveryPoint.count({ where: { orderId: order.id } });
 
-    // ── Compter les points existants pour la séquence ──
-    const count = await DeliveryPoint.count({
-      where: { orderId: order.id },
-    });
-
-    // ── Créer le point de livraison ──
     const point = await DeliveryPoint.create({
       orderId:       order.id,
       clientId:      client.id,
@@ -59,47 +38,79 @@ router.post('/order', auth, async (req, res, next) => {
       status:        'pending',
       clientName:    client.name,
       failureNote:   note || null,
-      items:         items,
+      items,
       totalPrice,
       pickupAddress: pickupAddress || 'Entrepôt central',
     });
-
-    console.log('Point créé:', point.id, 'dans tournée:', order.id);
 
     res.status(201).json({
       message: 'Commande créée avec succès !',
       orderId: order.id,
       pointId: point.id,
     });
-
   } catch (e) {
     console.error('ERREUR client/order:', e.message);
     res.status(500).json({ error: e.message });
   }
 });
 
+// ─── Mes commandes (client connecté) ─────────────────────────────────────────
 router.get('/my-orders', auth, async (req, res, next) => {
   try {
     const points = await DeliveryPoint.findAll({
-      where: { clientId: req.user.id },
-      include: [{
-        model: DeliveryOrder,
-        include: [{
-          model: User,
-          as: 'Driver',
-          attributes: ['id', 'name', 'phone', 'vehicle'],
-        }],
-      }],
-      order: [['createdAt', 'DESC']],
+      where:  { clientId: req.user.id },
+      order:  [['createdAt', 'DESC']],
     });
 
-    const result = points.map(p => {
-      const plain = p.toJSON();
-      if (typeof plain.items === 'string') {
-        try { plain.items = JSON.parse(plain.items); } catch { plain.items = []; }
+    const result = [];
+
+    for (const point of points) {
+      const pointData = point.toJSON();
+
+      // Formater les items
+      if (typeof pointData.items === 'string') {
+        try   { pointData.items = JSON.parse(pointData.items); }
+        catch { pointData.items = []; }
       }
-      return plain;
-    });
+
+      // Récupérer la tournée
+      const order = await DeliveryOrder.findByPk(point.orderId);
+
+      // ✅ CORRECTION CLÉE : chercher le livreur dans 'users' (role=driver)
+      // car driverAcceptedId sur le point = UUID de la table users
+      let driverData = null;
+
+      // Priorité 1 : driverAcceptedId sur le point lui-même
+      const driverUserId = pointData.driverAcceptedId || (order && order.driverId);
+
+      if (driverUserId) {
+        // Chercher d'abord dans users (role=driver)
+        const driverUser = await User.findOne({
+          where: { id: driverUserId, role: 'driver' },
+          attributes: ['id', 'name', 'phone', 'vehicle'],
+        });
+        if (driverUser) {
+          driverData = driverUser.toJSON();
+        } else {
+          // Fallback : ancienne table 'drivers' séparée
+          const oldDriver = await Driver.findByPk(driverUserId, {
+            attributes: ['id', 'name', 'phone', 'vehicle'],
+          }).catch(() => null);
+          if (oldDriver) driverData = oldDriver.toJSON();
+        }
+      }
+
+      result.push({
+        ...pointData,
+        DeliveryOrder: order
+          ? {
+              ...order.toJSON(),
+              driverId: driverUserId || null,
+              Driver:   driverData,
+            }
+          : null,
+      });
+    }
 
     res.json(result);
   } catch (e) {
@@ -108,22 +119,26 @@ router.get('/my-orders', auth, async (req, res, next) => {
   }
 });
 
-// Annuler une commande (seulement si pending)
+// ─── Annuler une commande (seulement si pending) ──────────────────────────────
 router.patch('/cancel/:pointId', auth, async (req, res, next) => {
   try {
     const point = await DeliveryPoint.findOne({
       where: { id: req.params.pointId, clientId: req.user.id },
     });
-    if (!point) return res.status(404).json({ error: 'Commande introuvable' });
+    if (!point)
+      return res.status(404).json({ error: 'Commande introuvable' });
     if (point.status !== 'pending')
-      return res.status(400).json({ error: 'Impossible d\'annuler une commande déjà en cours ou livrée' });
+      return res.status(400).json({ error: "Impossible d'annuler une commande déjà en cours ou livrée" });
 
     await point.update({ status: 'failed', failureNote: 'Annulée par le client' });
     res.json({ message: 'Commande annulée avec succès' });
-  } catch (e) { next(e); }
+  } catch (e) {
+    console.error('ERREUR cancel:', e.message);
+    next(e);
+  }
 });
 
-// Noter le livreur (seulement après livraison)
+// ─── Noter le livreur (seulement après livraison) ────────────────────────────
 router.post('/rate/:pointId', auth, async (req, res, next) => {
   try {
     const { rating, comment } = req.body;
@@ -133,15 +148,19 @@ router.post('/rate/:pointId', auth, async (req, res, next) => {
     const point = await DeliveryPoint.findOne({
       where: { id: req.params.pointId, clientId: req.user.id },
     });
-    if (!point) return res.status(404).json({ error: 'Commande introuvable' });
+    if (!point)
+      return res.status(404).json({ error: 'Commande introuvable' });
     if (point.status !== 'delivered')
-      return res.status(400).json({ error: 'Vous ne pouvez noter qu\'une livraison effectuée' });
+      return res.status(400).json({ error: "Vous ne pouvez noter qu'une livraison effectuée" });
     if (point.rating)
       return res.status(400).json({ error: 'Vous avez déjà noté cette livraison' });
 
     await point.update({ rating, ratingComment: comment || null });
     res.json({ message: 'Merci pour votre évaluation !' });
-  } catch (e) { next(e); }
+  } catch (e) {
+    console.error('ERREUR rate:', e.message);
+    next(e);
+  }
 });
 
 module.exports = router;

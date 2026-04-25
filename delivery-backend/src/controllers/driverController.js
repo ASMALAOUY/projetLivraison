@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt    = require('jsonwebtoken');
-const { Driver, DeliveryOrder } = require('../models');
+const { Driver, DeliveryOrder, DeliveryPoint } = require('../models');  // ← Ajoutez DeliveryPoint
 
 exports.register = async (req, res, next) => {
   try {
@@ -22,14 +22,22 @@ exports.login = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
+// VERSION CORRIGÉE
 exports.getTodayOrders = async (req, res, next) => {
   try {
     const today  = new Date().toISOString().split('T')[0];
     const orders = await DeliveryOrder.findAll({
       where: { driverId: req.user.id, date: today },
-      include: ['DeliveryPoints'],
-      order:   [[{ model: DeliveryPoint }, 'sequence', 'ASC']],
+      include: [{
+        model: DeliveryPoint,
+        as: 'DeliveryPoints',        // ← Ajoutez l'alias
+        order: [['sequence', 'ASC']]
+      }],
+      order: [['date', 'DESC']]
     });
     res.json(orders);
-  } catch (e) { next(e); }
+  } catch (e) { 
+    console.error('Erreur getTodayOrders:', e.message);
+    next(e); 
+  }
 };
