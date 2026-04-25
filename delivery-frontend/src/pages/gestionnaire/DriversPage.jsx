@@ -3,6 +3,10 @@ import Navbar from '../../components/Navbar'
 import StatusBadge from '../../components/StatusBadge'
 import api from '../../api/api'
 
+const VEHICLES = ['Moto', 'Vélo', 'Voiture', 'Camionnette']
+const VEHICLE_ICONS = { Moto: '🏍️', Vélo: '🚲', Voiture: '🚗', Camionnette: '🚐' }
+const Y = '#F59E0B', F = '#D97706', DARK = '#1A1A18'
+
 export default function DriversPage() {
   const [drivers,  setDrivers]  = useState([])
   const [loading,  setLoading]  = useState(true)
@@ -10,260 +14,141 @@ export default function DriversPage() {
   const [success,  setSuccess]  = useState('')
   const [showForm, setShowForm] = useState(false)
   const [deleting, setDeleting] = useState(null)
-  const [form,     setForm]     = useState({
-    name: '', phone: '', vehicle: '', password: ''
-  })
+  const [form,     setForm]     = useState({ name: '', phone: '', vehicle: '', password: '' })
   const [creating, setCreating] = useState(false)
 
   const loadDrivers = async () => {
-    try {
-      const { data } = await api.get('/drivers')
-      setDrivers(data)
-    } catch (err) {
-      setError(err.response?.data?.error || err.message)
-    } finally {
-      setLoading(false)
-    }
+    try { const { data } = await api.get('/drivers'); setDrivers(data) }
+    catch (err) { setError(err.response?.data?.error || err.message) }
+    finally { setLoading(false) }
   }
-
   useEffect(() => { loadDrivers() }, [])
 
   const handleCreate = async (e) => {
-    e.preventDefault()
-    setError(''); setSuccess('')
-    if (!form.name || !form.phone || !form.password)
-      return setError('Nom, téléphone et mot de passe sont requis')
+    e.preventDefault(); setError(''); setSuccess('')
+    if (!form.name || !form.phone || !form.password) return setError('Nom, téléphone et mot de passe requis')
     setCreating(true)
     try {
       await api.post('/drivers', form)
-      setSuccess('Livreur ajouté avec succès !')
-      setForm({ name: '', phone: '', vehicle: '', password: '' })
-      setShowForm(false)
-      await loadDrivers()
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de la création')
-    } finally {
-      setCreating(false)
-    }
+      setSuccess('Livreur ajouté !'); setForm({ name: '', phone: '', vehicle: '', password: '' }); setShowForm(false)
+      await loadDrivers(); setTimeout(() => setSuccess(''), 3000)
+    } catch (err) { setError(err.response?.data?.error || 'Erreur') }
+    finally { setCreating(false) }
   }
 
   const toggleStatus = async (id) => {
-    try {
-      await api.patch(`/drivers/${id}/status`)
-      await loadDrivers()
-    } catch (err) {
-      setError(err.response?.data?.error || 'Erreur')
-    }
+    try { await api.patch(`/drivers/${id}/status`); await loadDrivers() }
+    catch (err) { setError(err.response?.data?.error || 'Erreur') }
   }
 
   const handleDelete = async (id, name) => {
-    if (!window.confirm(`Supprimer le livreur "${name}" ? Cette action est irréversible.`))
-      return
-    setDeleting(id)
-    setError('')
-    try {
-      await api.delete(`/drivers/${id}`)
-      setSuccess(`Livreur "${name}" supprimé.`)
-      await loadDrivers()
-      setTimeout(() => setSuccess(''), 3000)
-    } catch (err) {
-      setError(err.response?.data?.error || 'Erreur lors de la suppression')
-    } finally {
-      setDeleting(null)
-    }
+    if (!window.confirm(`Supprimer "${name}" ?`)) return
+    setDeleting(id); setError('')
+    try { await api.delete(`/drivers/${id}`); setSuccess(`"${name}" supprimé.`); await loadDrivers(); setTimeout(() => setSuccess(''), 3000) }
+    catch (err) { setError(err.response?.data?.error || 'Erreur') }
+    finally { setDeleting(null) }
   }
 
-  const VEHICLES = ['Moto', 'Vélo', 'Voiture', 'Camionnette']
-
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={s.page}>
       <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      <div style={s.container}>
 
         {/* Header */}
-        <div className="flex items-center justify-between">
+        <div style={s.header}>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Gestion des livreurs</h1>
-            <p className="text-sm text-gray-400 mt-0.5">{drivers.length} livreur(s) enregistré(s)</p>
+            <h1 style={s.pageTitle}>Gestion des livreurs</h1>
+            <p style={s.pageSub}>{drivers.length} livreur(s) enregistré(s)</p>
           </div>
-          <button
-            onClick={() => { setShowForm(!showForm); setError('') }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition ${
-              showForm
-                ? 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}>
+          <button onClick={() => { setShowForm(!showForm); setError('') }} style={showForm ? s.cancelBtn : s.addBtn}>
             {showForm ? '✕ Annuler' : '+ Ajouter un livreur'}
           </button>
         </div>
 
-        {/* Messages */}
-        {error   && (
-          <div className="bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
-            <span>❌</span> {error}
-          </div>
-        )}
-        {success && (
-          <div className="bg-green-50 border border-green-200 text-green-700 text-sm rounded-xl px-4 py-3 flex items-center gap-2">
-            <span>✅</span> {success}
-          </div>
-        )}
+        {error   && <div style={s.errorBox}>❌ {error}</div>}
+        {success && <div style={s.successBox}>✅ {success}</div>}
 
-        {/* Formulaire d'ajout */}
+        {/* Form */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden">
-            <div className="bg-blue-600 px-6 py-4">
-              <h2 className="font-bold text-white text-lg">Nouveau livreur</h2>
-              <p className="text-blue-200 text-sm mt-0.5">Remplissez les informations du livreur</p>
+          <div style={s.formCard}>
+            <div style={s.formHeader}>
+              <h2 style={s.formTitle}>Nouveau livreur</h2>
+              <p style={s.formSub}>Remplissez les informations</p>
             </div>
-            <form onSubmit={handleCreate} className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Nom complet *
-                  </label>
-                  <input
-                    type="text"
-                    value={form.name}
-                    onChange={e => setForm({...form, name: e.target.value})}
-                    placeholder="Prénom Nom"
-                    required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Téléphone *
-                  </label>
-                  <input
-                    type="tel"
-                    value={form.phone}
-                    onChange={e => setForm({...form, phone: e.target.value})}
-                    placeholder="06xxxxxxxx"
-                    required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Véhicule
-                  </label>
-                  <select
-                    value={form.vehicle}
-                    onChange={e => setForm({...form, vehicle: e.target.value})}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  >
-                    <option value="">Choisir un véhicule…</option>
+            <form onSubmit={handleCreate} style={s.form}>
+              <div style={s.formGrid}>
+                {[
+                  { key: 'name',     label: 'Nom complet *',  type: 'text',     ph: 'Prénom Nom' },
+                  { key: 'phone',    label: 'Téléphone *',     type: 'tel',      ph: '06xxxxxxxx' },
+                  { key: 'password', label: 'Mot de passe *',  type: 'password', ph: 'Min. 6 caractères' },
+                ].map(({ key, label, type, ph }) => (
+                  <div key={key} style={s.field}>
+                    <label style={s.label}>{label}</label>
+                    <input type={type} value={form[key]} onChange={e => setForm({ ...form, [key]: e.target.value })}
+                      placeholder={ph} required style={s.input} />
+                  </div>
+                ))}
+                <div style={s.field}>
+                  <label style={s.label}>Véhicule</label>
+                  <select value={form.vehicle} onChange={e => setForm({ ...form, vehicle: e.target.value })} style={s.input}>
+                    <option value="">Choisir…</option>
                     {VEHICLES.map(v => <option key={v}>{v}</option>)}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
-                    Mot de passe *
-                  </label>
-                  <input
-                    type="password"
-                    value={form.password}
-                    onChange={e => setForm({...form, password: e.target.value})}
-                    placeholder="Min. 6 caractères"
-                    required
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  />
-                </div>
               </div>
-              <div className="flex gap-3 mt-6">
-                <button
-                  type="submit"
-                  disabled={creating}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  {creating ? (
-                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/> Création…</>
-                  ) : '✓ Ajouter le livreur'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setShowForm(false); setError('') }}
-                  className="px-6 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50 transition"
-                >
-                  Annuler
-                </button>
-              </div>
+              <button type="submit" disabled={creating} style={{ ...s.submitBtn, opacity: creating ? 0.7 : 1 }}>
+                {creating ? 'Création…' : '✓ Ajouter le livreur'}
+              </button>
             </form>
           </div>
         )}
 
-        {/* Liste des livreurs */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Table */}
+        <div style={s.tableCard}>
           {loading ? (
-            <div className="flex items-center justify-center py-16 gap-3">
-              <div className="w-6 h-6 border-3 border-blue-500 border-t-transparent rounded-full animate-spin"/>
-              <p className="text-sm text-gray-400">Chargement…</p>
-            </div>
+            <div style={s.loadingBox}><div style={s.spinner} /><span style={{ color: '#999', fontSize: 14 }}>Chargement…</span></div>
           ) : drivers.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="text-5xl mb-3">👤</div>
-              <p className="font-semibold text-gray-600">Aucun livreur enregistré</p>
-              <p className="text-sm text-gray-400 mt-1">Cliquez sur "Ajouter un livreur" pour commencer</p>
+            <div style={s.emptyBox}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>👤</div>
+              <p style={s.emptyTitle}>Aucun livreur enregistré</p>
+              <p style={s.emptySub}>Cliquez sur "Ajouter un livreur" pour commencer</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide border-b border-gray-100">
-                <tr>
-                  <th className="px-6 py-3 text-left">Livreur</th>
-                  <th className="px-6 py-3 text-left">Téléphone</th>
-                  <th className="px-6 py-3 text-left">Véhicule</th>
-                  <th className="px-6 py-3 text-left">Statut</th>
-                  <th className="px-6 py-3 text-left">Actions</th>
+            <table style={s.table}>
+              <thead>
+                <tr style={s.thead}>
+                  {['Livreur', 'Téléphone', 'Véhicule', 'Statut', 'Actions'].map(h => (
+                    <th key={h} style={s.th}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                {drivers.map(d => (
-                  <tr key={d.id} className="hover:bg-gray-50 transition">
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 flex-shrink-0">
-                          {d.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
-                        </div>
+              <tbody>
+                {drivers.map((d, idx) => (
+                  <tr key={d.id} style={{ ...s.tr, background: idx % 2 === 0 ? '#fff' : '#FFFBEB' }}>
+                    <td style={s.td}>
+                      <div style={s.driverCell}>
+                        <div style={s.avatar}>{d.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>
                         <div>
-                          <p className="font-semibold text-gray-800">{d.name}</p>
-                          <p className="text-xs text-gray-400">ID: {d.id.slice(0,8)}…</p>
+                          <p style={s.driverName}>{d.name}</p>
+                          <p style={s.driverMeta}>ID: {d.id.slice(0,8)}…</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{d.phone || '—'}</td>
-                    <td className="px-6 py-4">
+                    <td style={s.td}><span style={s.phone}>{d.phone || '—'}</span></td>
+                    <td style={s.td}>
                       {d.vehicle ? (
-                        <span className="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full font-medium">
-                          {d.vehicle === 'Moto' ? '🏍️' :
-                           d.vehicle === 'Vélo' ? '🚲' :
-                           d.vehicle === 'Voiture' ? '🚗' : '🚐'} {d.vehicle}
-                        </span>
+                        <span style={s.vehicleBadge}>{VEHICLE_ICONS[d.vehicle] || '🚗'} {d.vehicle}</span>
                       ) : '—'}
                     </td>
-                    <td className="px-6 py-4">
-                      <StatusBadge status={d.status}/>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {/* Activer / Désactiver */}
-                        <button
-                          onClick={() => toggleStatus(d.id)}
-                          className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition ${
-                            d.status === 'active'
-                              ? 'border-orange-200 text-orange-600 hover:bg-orange-50'
-                              : 'border-green-200 text-green-600 hover:bg-green-50'
-                          }`}>
+                    <td style={s.td}><StatusBadge status={d.status} /></td>
+                    <td style={s.td}>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button onClick={() => toggleStatus(d.id)}
+                          style={d.status === 'active' ? s.btnWarn : s.btnGreen}>
                           {d.status === 'active' ? '⏸ Désactiver' : '▶ Activer'}
                         </button>
-
-                        {/* Supprimer */}
-                        <button
-                          onClick={() => handleDelete(d.id, d.name)}
-                          disabled={deleting === d.id}
-                          className="text-xs font-medium px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition disabled:opacity-40"
-                        >
+                        <button onClick={() => handleDelete(d.id, d.name)} disabled={deleting === d.id}
+                          style={{ ...s.btnDanger, opacity: deleting === d.id ? 0.4 : 1 }}>
                           {deleting === d.id ? '…' : '🗑 Supprimer'}
                         </button>
                       </div>
@@ -274,8 +159,52 @@ export default function DriversPage() {
             </table>
           )}
         </div>
-
       </div>
     </div>
   )
+}
+
+const s = {
+  page:       { minHeight: '100vh', background: '#FAFAF8', fontFamily: 'system-ui, sans-serif' },
+  container:  { maxWidth: 1100, margin: '0 auto', padding: '32px 24px' },
+  header:     { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
+  pageTitle:  { fontSize: 26, fontWeight: 900, color: DARK, letterSpacing: -0.5 },
+  pageSub:    { fontSize: 13, color: '#999', marginTop: 3 },
+  addBtn:     { padding: '10px 22px', borderRadius: 12, border: 'none', background: Y, color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
+  cancelBtn:  { padding: '10px 22px', borderRadius: 12, border: '1.5px solid #E5E7EB', background: '#fff', color: '#666', fontSize: 14, fontWeight: 600, cursor: 'pointer' },
+  errorBox:   { background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: 12, padding: '12px 16px', color: '#92400E', fontSize: 14, marginBottom: 16 },
+  successBox: { background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 12, padding: '12px 16px', color: '#16A34A', fontSize: 14, marginBottom: 16 },
+
+  formCard:   { background: '#fff', borderRadius: 20, border: `1.5px solid ${Y}`, overflow: 'hidden', marginBottom: 24 },
+  formHeader: { background: Y, padding: '20px 24px' },
+  formTitle:  { fontSize: 17, fontWeight: 800, color: '#fff' },
+  formSub:    { fontSize: 13, color: 'rgba(255,255,255,0.75)', marginTop: 3 },
+  form:       { padding: 24 },
+  formGrid:   { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 },
+  field:      { display: 'flex', flexDirection: 'column', gap: 6 },
+  label:      { fontSize: 11, fontWeight: 800, color: '#999', letterSpacing: 1 },
+  input:      { padding: '11px 14px', borderRadius: 10, border: '1.5px solid #E5E7EB', fontSize: 14, color: DARK, outline: 'none' },
+  submitBtn:  { padding: '13px 28px', borderRadius: 12, border: 'none', background: Y, color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer' },
+
+  tableCard:  { background: '#fff', borderRadius: 20, border: '1.5px solid #EBEBEB', overflow: 'hidden' },
+  table:      { width: '100%', borderCollapse: 'collapse' },
+  thead:      { background: '#FFFBEB' },
+  th:         { padding: '14px 20px', textAlign: 'left', fontSize: 11, fontWeight: 800, color: F, letterSpacing: 1, textTransform: 'uppercase', borderBottom: `2px solid ${Y}` },
+  tr:         { borderBottom: '1px solid #F5F5F3' },
+  td:         { padding: '14px 20px', fontSize: 14 },
+  driverCell: { display: 'flex', alignItems: 'center', gap: 12 },
+  avatar:     { width: 36, height: 36, borderRadius: '50%', background: '#FFFBEB', border: `2px solid ${Y}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: F, flexShrink: 0 },
+  driverName: { fontSize: 14, fontWeight: 700, color: DARK },
+  driverMeta: { fontSize: 11, color: '#CCC' },
+  phone:      { fontSize: 13, color: '#555' },
+  vehicleBadge:{ background: '#FFFBEB', color: F, border: `1px solid #FDE68A`, borderRadius: 8, padding: '4px 10px', fontSize: 12, fontWeight: 700 },
+  btnWarn:    { padding: '7px 14px', borderRadius: 8, border: '1px solid #FDE68A', background: '#FFFBEB', color: F, fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  btnGreen:   { padding: '7px 14px', borderRadius: 8, border: '1px solid #BBF7D0', background: '#F0FDF4', color: '#16A34A', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+  btnDanger:  { padding: '7px 14px', borderRadius: 8, border: '1px solid #FECACA', background: '#FEF2F2', color: '#DC2626', fontSize: 12, fontWeight: 700, cursor: 'pointer' },
+
+  loadingBox: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 60 },
+  spinner:    { width: 22, height: 22, border: `3px solid ${Y}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+  emptyBox:   { textAlign: 'center', padding: 60 },
+  emptyTitle: { fontSize: 17, fontWeight: 700, color: '#555' },
+  emptySub:   { fontSize: 13, color: '#CCC', marginTop: 6 },
 }

@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar'
 import StatusBadge from '../../components/StatusBadge'
-import LoadingSpinner from '../../components/LoadingSpinner'
 import api from '../../api/api'
 
 export default function DashboardPage() {
@@ -12,266 +11,147 @@ export default function DashboardPage() {
   const load = () => {
     Promise.all([api.get('/orders'), api.get('/drivers')])
       .then(([o, d]) => { setOrders(o.data); setDrivers(d.data) })
-      .catch(err => console.error('Dashboard error:', err.response?.data || err.message))
+      .catch(err => console.error(err))
       .finally(() => setLoading(false))
   }
+  useEffect(() => { load(); const i = setInterval(load, 30000); return () => clearInterval(i) }, [])
 
-  useEffect(() => {
-    load()
-    const interval = setInterval(load, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  const total      = orders.length
+  const done       = orders.filter(o => o.status === 'done').length
+  const inProgress = orders.filter(o => o.status === 'in_progress').length
+  const planned    = orders.filter(o => o.status === 'planned').length
+  const waiting    = orders.filter(o => o.status === 'pending_acceptance').length
+  const rate       = total ? Math.round((done / total) * 100) : 0
+  const allPoints  = orders.flatMap(o => o.DeliveryPoints || [])
+  const ptDel      = allPoints.filter(p => p.status === 'delivered').length
+  const ptFail     = allPoints.filter(p => p.status === 'failed').length
+  const ptPend     = allPoints.filter(p => p.status === 'pending').length
 
-  const total       = orders.length
-  const done        = orders.filter(o => o.status === 'done').length
-  const inProgress  = orders.filter(o => o.status === 'in_progress').length
-  const planned     = orders.filter(o => o.status === 'planned').length
-  const waitingAccept = orders.filter(o => o.status === 'pending_acceptance').length
-  const rate        = total ? Math.round((done / total) * 100) : 0
-
-  const allPoints   = orders.flatMap(o => o.DeliveryPoints || [])
-  const ptDelivered = allPoints.filter(p => p.status === 'delivered').length
-  const ptFailed    = allPoints.filter(p => p.status === 'failed').length
-  const ptPending   = allPoints.filter(p => p.status === 'pending').length
-
-  // ── Temps moyen par tournée ─────────────────────────────
-  const completedWithTime = orders.filter(
-    o => o.status === 'done' && o.startedAt && o.finishedAt
-  )
-  const avgMinutes = completedWithTime.length > 0
-    ? Math.round(
-        completedWithTime.reduce((sum, o) => {
-          const diff = new Date(o.finishedAt) - new Date(o.startedAt)
-          return sum + diff / 60000
-        }, 0) / completedWithTime.length
-      )
+  const completedWithTime = orders.filter(o => o.status === 'done' && o.startedAt && o.finishedAt)
+  const avgMin = completedWithTime.length > 0
+    ? Math.round(completedWithTime.reduce((s, o) => s + (new Date(o.finishedAt) - new Date(o.startedAt)) / 60000, 0) / completedWithTime.length)
     : null
+  const fmt = m => m === null ? '—' : m < 60 ? `${m} min` : `${Math.floor(m/60)}h ${m%60}min`
 
-  const formatDuration = (min) => {
-    if (min === null) return '—'
-    if (min < 60) return `${min} min`
-    return `${Math.floor(min / 60)}h ${min % 60}min`
-  }
+  const parseItems = raw => { try { return typeof raw === 'string' ? JSON.parse(raw) : (raw || []) } catch { return [] } }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={s.page}>
       <Navbar />
-      <div className="max-w-6xl mx-auto px-4 py-8">
+      <div style={s.container}>
 
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-800">Tableau de bord</h1>
-          <button onClick={load}
-            className="text-xs text-blue-600 border border-blue-200 px-3 py-1.5 rounded-full hover:bg-blue-50 transition">
-            Actualiser
-          </button>
+        {/* Header */}
+        <div style={s.header}>
+          <div>
+            <h1 style={s.pageTitle}>Tableau de bord</h1>
+            <p style={s.pageSub}>Vue d'ensemble de votre activité</p>
+          </div>
+          <button onClick={load} style={s.refreshBtn}>↻ Actualiser</button>
         </div>
 
-        {loading ? <LoadingSpinner /> : (
+        {loading ? (
+          <div style={s.loadingBox}>
+            <div style={s.spinner} />
+            <span style={{ color: '#999', fontSize: 14 }}>Chargement…</span>
+          </div>
+        ) : (
           <>
-            {/* ── KPI Tournées ── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {/* KPI Tournées */}
+            <div style={s.kpiGrid}>
               {[
-                { label: 'Total commandes',  value: total,
-                  border: 'border-blue-400',   txt: 'text-blue-700' },
-                { label: 'En cours',         value: inProgress + planned,
-                  border: 'border-yellow-400', txt: 'text-yellow-700' },
-                { label: 'Taux de succès',   value: `${rate}%`,
-                  border: 'border-purple-400', txt: 'text-purple-700' },
-                { label: 'Temps moyen tournée', value: formatDuration(avgMinutes),
-                  border: 'border-teal-400',   txt: 'text-teal-700',
-                  sub: completedWithTime.length > 0
-                    ? `sur ${completedWithTime.length} tournée(s)`
-                    : 'Aucune tournée terminée' },
-              ].map(({ label, value, border, txt, sub }) => (
-                <div key={label} className={`bg-white rounded-2xl p-5 border-l-4 ${border} shadow-sm`}>
-                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{label}</p>
-                  <p className={`text-3xl font-bold ${txt}`}>{value}</p>
-                  {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
-                </div>
-              ))}
-            </div>
-
-            {/* ── KPI Points ── */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {[
-                { label: 'Points livrés',     value: ptDelivered,
-                  color: 'text-green-700', bg: 'bg-green-50', border: 'border-green-200' },
-                { label: 'Points en attente', value: ptPending,
-                  color: 'text-blue-700',  bg: 'bg-blue-50',  border: 'border-blue-200'  },
-                { label: 'Points échoués',    value: ptFailed,
-                  color: 'text-red-700',   bg: 'bg-red-50',   border: 'border-red-200'   },
+                { label: 'Total commandes',  value: total,           color: '#1A1A18', bg: '#fff',     border: '#E5E7EB' },
+                { label: 'En cours',         value: inProgress+planned, color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+                { label: 'Taux de succès',   value: `${rate}%`,      color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' },
+                { label: 'Temps moyen',      value: fmt(avgMin),     color: F,         bg: '#FFFBEB', border: '#FDE68A' },
               ].map(({ label, value, color, bg, border }) => (
-                <div key={label} className={`${bg} rounded-2xl p-4 border ${border}`}>
-                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">{label}</p>
-                  <p className={`text-2xl font-bold ${color}`}>{value}</p>
+                <div key={label} style={{ ...s.kpiCard, background: bg, borderColor: border }}>
+                  <p style={s.kpiLabel}>{label}</p>
+                  <p style={{ ...s.kpiVal, color }}>{value}</p>
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            {/* KPI Points */}
+            <div style={s.pointsGrid}>
+              {[
+                { label: 'Points livrés',     value: ptDel,  color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' },
+                { label: 'Points en attente', value: ptPend, color: '#2563EB', bg: '#EFF6FF', border: '#BFDBFE' },
+                { label: 'Points échoués',    value: ptFail, color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
+              ].map(({ label, value, color, bg, border }) => (
+                <div key={label} style={{ ...s.pointCard, background: bg, borderColor: border }}>
+                  <p style={s.kpiLabel}>{label}</p>
+                  <p style={{ ...s.pointVal, color }}>{value}</p>
+                </div>
+              ))}
+            </div>
 
-              {/* ── Livreurs ── */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <h2 className="font-semibold text-gray-700 mb-4">Livreurs ({drivers.length})</h2>
+            <div style={s.twoCol}>
+              {/* Livreurs */}
+              <div style={s.card}>
+                <h2 style={s.cardTitle}>🛵 Livreurs ({drivers.length})</h2>
                 {drivers.length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-sm text-gray-400">Aucun livreur enregistré</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {drivers.map(d => {
-                      const activeCount = orders.filter(
-                        o => o.driverId === d.id &&
-                             (o.status === 'planned' || o.status === 'in_progress')
-                      ).length
-                      // Calculer les stats du livreur
-                      const driverOrders = orders.filter(o => o.Driver?.id === d.id)
-                      const driverDone   = driverOrders.filter(o => o.status === 'done').length
-                      const driverTimes  = driverOrders.filter(
-                        o => o.status === 'done' && o.startedAt && o.finishedAt
-                      )
-                      const driverAvg = driverTimes.length > 0
-                        ? Math.round(driverTimes.reduce((sum, o) =>
-                            sum + (new Date(o.finishedAt) - new Date(o.startedAt)) / 60000, 0
-                          ) / driverTimes.length)
-                        : null
-
-                      return (
-                        <div key={d.id}
-                          className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition">
-                          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700 flex-shrink-0">
-                            {d.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 truncate">{d.name}</p>
-                            <p className="text-xs text-gray-400">
-                              {d.vehicle} · {driverDone} livraison(s)
-                              {driverAvg && ` · moy. ${formatDuration(driverAvg)}`}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            {activeCount > 0 && (
-                              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">
-                                {activeCount} en cours
-                              </span>
-                            )}
-                            <StatusBadge status={d.status} />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+                  <p style={s.empty}>Aucun livreur enregistré</p>
+                ) : drivers.map(d => {
+                  const active = orders.filter(o => o.driverId === d.id && ['planned','in_progress'].includes(o.status)).length
+                  return (
+                    <div key={d.id} style={s.driverRow}>
+                      <div style={s.avatar}>{d.name.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}</div>
+                      <div style={{ flex: 1 }}>
+                        <p style={s.driverName}>{d.name}</p>
+                        <p style={s.driverSub}>{d.vehicle} · {active > 0 ? `${active} en cours` : 'Disponible'}</p>
+                      </div>
+                      <div style={{ ...s.statusDot, background: d.status === 'active' ? '#22C55E' : '#9CA3AF' }} />
+                    </div>
+                  )
+                })}
               </div>
 
-              {/* ── Dernières commandes ── */}
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-                <h2 className="font-semibold text-gray-700 mb-4">Dernières commandes ({total})</h2>
+              {/* Dernières commandes */}
+              <div style={s.card}>
+                <h2 style={s.cardTitle}>📦 Dernières commandes</h2>
                 {orders.length === 0 ? (
-                  <div className="text-center py-6">
-                    <p className="text-sm text-gray-400">Aucune commande passée</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {orders.slice(0, 8).map(o => {
-                      const pts  = o.DeliveryPoints || []
-                      const clientName = pts[0]?.clientName || '—'
-                      const items = (() => {
-                        try {
-                          const raw = pts[0]?.items
-                          return typeof raw === 'string' ? JSON.parse(raw) : (raw || [])
-                        } catch { return [] }
-                      })()
-                      // Durée réelle si terminée
-                      const duration = o.startedAt && o.finishedAt
-                        ? Math.round((new Date(o.finishedAt) - new Date(o.startedAt)) / 60000)
-                        : null
-
-                      return (
-                        <div key={o.id}
-                          className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-gray-50 transition border border-transparent hover:border-gray-100">
-                          <div className="flex items-center gap-3 min-w-0">
-                            {items.length > 0 ? (
-                              <div className="flex gap-0.5 flex-shrink-0">
-                                {items.slice(0, 3).map((item, i) => (
-                                  <span key={i} className="text-base">{item.emoji}</span>
-                                ))}
-                              </div>
-                            ) : (
-                              <span className="text-base flex-shrink-0">📦</span>
-                            )}
-                            <div className="min-w-0">
-                              <p className="text-sm font-medium text-gray-800 truncate">{clientName}</p>
-                              <p className="text-xs text-gray-400">
-                                {o.Driver?.name || 'Non assigné'} · {o.date}
-                                {duration && (
-                                  <span className="ml-1 text-teal-600 font-medium">
-                                    · {formatDuration(duration)}
-                                  </span>
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                            {pts[0]?.totalPrice > 0 && (
-                              <span className="text-xs font-bold text-blue-600">
-                                {pts[0].totalPrice} MAD
-                              </span>
-                            )}
-                            <StatusBadge status={o.status} />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
+                  <p style={s.empty}>Aucune commande</p>
+                ) : orders.slice(0, 6).map(o => {
+                  const pts = o.DeliveryPoints || []
+                  const items = parseItems(pts[0]?.items)
+                  return (
+                    <div key={o.id} style={s.orderRow}>
+                      <div style={s.orderIcon}>📦</div>
+                      <div style={{ flex: 1 }}>
+                        <p style={s.orderClient}>{pts[0]?.clientName || '—'}</p>
+                        <p style={s.orderSub}>{o.Driver?.name || 'Non assigné'} · {o.date}</p>
+                      </div>
+                      <div style={s.orderRight}>
+                        {pts[0]?.totalPrice > 0 && <span style={s.price}>{pts[0].totalPrice} MAD</span>}
+                        <StatusBadge status={o.status} />
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </div>
 
-            {/* ── Commandes en attente ── */}
-            {waitingAccept > 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
-                  <h2 className="font-semibold text-orange-800">
-                    {waitingAccept} commande{waitingAccept > 1 ? 's' : ''} en attente d'un livreur
-                  </h2>
+            {/* En attente */}
+            {waiting > 0 && (
+              <div style={s.waitingCard}>
+                <div style={s.waitingHeader}>
+                  <div style={s.pulseDot} />
+                  <h2 style={s.waitingTitle}>{waiting} commande{waiting > 1 ? 's' : ''} en attente d'un livreur</h2>
                 </div>
-                <div className="space-y-2">
-                  {orders.filter(o => o.status === 'pending_acceptance').map(o => {
-                    const pts  = o.DeliveryPoints || []
-                    const items = (() => {
-                      try {
-                        const raw = pts[0]?.items
-                        return typeof raw === 'string' ? JSON.parse(raw) : (raw || [])
-                      } catch { return [] }
-                    })()
-                    return (
-                      <div key={o.id}
-                        className="bg-white rounded-xl px-4 py-3 flex items-center justify-between border border-orange-100">
-                        <div className="flex items-center gap-3">
-                          <div className="flex gap-0.5">
-                            {items.slice(0, 3).map((item, i) => (
-                              <span key={i} className="text-base">{item.emoji}</span>
-                            ))}
-                          </div>
-                          <div>
-                            <p className="text-sm font-semibold text-gray-800">{pts[0]?.clientName || '—'}</p>
-                            <p className="text-xs text-gray-500">{pts[0]?.address || '—'}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {pts[0]?.totalPrice > 0 && (
-                            <span className="text-sm font-bold text-orange-600">{pts[0].totalPrice} MAD</span>
-                          )}
-                          <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-medium">
-                            En attente
-                          </span>
-                        </div>
+                {orders.filter(o => o.status === 'pending_acceptance').map(o => {
+                  const pts = o.DeliveryPoints || []
+                  return (
+                    <div key={o.id} style={s.waitingRow}>
+                      <div>
+                        <p style={s.waitingClient}>{pts[0]?.clientName || '—'}</p>
+                        <p style={s.waitingAddr}>{pts[0]?.address || '—'}</p>
                       </div>
-                    )
-                  })}
-                </div>
+                      {pts[0]?.totalPrice > 0 && (
+                        <span style={s.waitingPrice}>{pts[0].totalPrice} MAD</span>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </>
@@ -279,4 +159,54 @@ export default function DashboardPage() {
       </div>
     </div>
   )
+}
+
+const F = '#D97706'
+const Y = '#F59E0B'
+
+const s = {
+  page:      { minHeight: '100vh', background: '#FAFAF8', fontFamily: 'system-ui, sans-serif' },
+  container: { maxWidth: 1100, margin: '0 auto', padding: '32px 24px' },
+  header:    { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
+  pageTitle: { fontSize: 26, fontWeight: 900, color: '#1A1A18', letterSpacing: -0.5 },
+  pageSub:   { fontSize: 13, color: '#999', marginTop: 3 },
+  refreshBtn:{ padding: '8px 18px', borderRadius: 10, border: `1.5px solid ${Y}`, background: '#FFFBEB', color: F, fontSize: 13, fontWeight: 700, cursor: 'pointer' },
+  loadingBox:{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 80 },
+  spinner:   { width: 24, height: 24, border: `3px solid ${Y}`, borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' },
+
+  kpiGrid:   { display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 16 },
+  kpiCard:   { borderRadius: 18, padding: '20px 22px', border: '1.5px solid', borderLeft: `4px solid ${Y}` },
+  kpiLabel:  { fontSize: 11, fontWeight: 700, color: '#999', letterSpacing: 1, marginBottom: 8, textTransform: 'uppercase' },
+  kpiVal:    { fontSize: 32, fontWeight: 900, letterSpacing: -1 },
+
+  pointsGrid:{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14, marginBottom: 24 },
+  pointCard: { borderRadius: 16, padding: '16px 20px', border: '1.5px solid' },
+  pointVal:  { fontSize: 24, fontWeight: 800 },
+
+  twoCol:    { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 },
+  card:      { background: '#fff', borderRadius: 20, padding: '22px 24px', border: '1.5px solid #EBEBEB' },
+  cardTitle: { fontSize: 15, fontWeight: 800, color: '#1A1A18', marginBottom: 18, letterSpacing: -0.3 },
+  empty:     { fontSize: 13, color: '#CCC', textAlign: 'center', padding: '24px 0' },
+
+  driverRow: { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid #F5F5F3' },
+  avatar:    { width: 36, height: 36, borderRadius: '50%', background: '#FFFBEB', border: `2px solid ${Y}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800, color: F },
+  driverName:{ fontSize: 14, fontWeight: 700, color: '#1A1A18' },
+  driverSub: { fontSize: 12, color: '#999' },
+  statusDot: { width: 9, height: 9, borderRadius: '50%' },
+
+  orderRow:  { display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid #F5F5F3' },
+  orderIcon: { fontSize: 20 },
+  orderClient:{ fontSize: 14, fontWeight: 700, color: '#1A1A18' },
+  orderSub:  { fontSize: 12, color: '#999' },
+  orderRight:{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 },
+  price:     { fontSize: 13, fontWeight: 800, color: F },
+
+  waitingCard:  { background: '#FFFBEB', border: `1.5px solid #FDE68A`, borderRadius: 20, padding: '20px 24px' },
+  waitingHeader:{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 },
+  pulseDot:     { width: 9, height: 9, borderRadius: '50%', background: Y },
+  waitingTitle: { fontSize: 15, fontWeight: 800, color: '#92400E' },
+  waitingRow:   { display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', borderRadius: 12, padding: '12px 16px', marginBottom: 8, border: '1px solid #FDE68A' },
+  waitingClient:{ fontSize: 14, fontWeight: 700, color: '#1A1A18' },
+  waitingAddr:  { fontSize: 12, color: '#999' },
+  waitingPrice: { fontSize: 15, fontWeight: 800, color: F },
 }

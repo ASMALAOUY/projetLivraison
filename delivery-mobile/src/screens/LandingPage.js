@@ -98,7 +98,14 @@ export default function LandingPage() {
       ]);
       
       setStats(statsData);
-      setReviews(reviewsData || []);
+      // Dédoublonner par id avant de stocker
+      const seen = new Set()
+      const uniqueReviews = (reviewsData || []).filter(r => {
+        if (!r.id || seen.has(r.id)) return false
+        seen.add(r.id)
+        return true
+      })
+      setReviews(uniqueReviews);
     } catch (error) {
       console.error('Erreur chargement avis:', error);
     } finally {
@@ -320,7 +327,7 @@ export default function LandingPage() {
               horizontal
               showsHorizontalScrollIndicator={false}
               data={reviews}
-              keyExtractor={(item, index) => item.id?.toString() || index.toString()}
+              keyExtractor={(item, index) => `review-${item.id?.toString() || index}-${index}`}
               renderItem={({ item }) => (
                 <View style={styles.reviewCard}>
                   <View style={styles.reviewHeader}>

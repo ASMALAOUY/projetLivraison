@@ -49,14 +49,14 @@ async function createDefaultDriver() {
 async function startServer() {
   try {
     await sequelize.authenticate();
-    console.log('✅ Connexion PostgreSQL réussie');
+    console.log(' Connexion PostgreSQL réussie');
 
     await sequelize.sync({ force: false, alter: true });
-    console.log('✅ Tables synchronisées');
+    console.log(' Tables synchronisées');
 
     await createDefaultDriver();
 
-    // ✅ '0.0.0.0' = écoute sur toutes les interfaces réseau
+    //  '0.0.0.0' = écoute sur toutes les interfaces réseau
     // Nécessaire pour que les appareils Android/iOS accèdent au serveur
     app.listen(PORT, '0.0.0.0', () => {
       console.log(`🚀 Serveur sur http://0.0.0.0:${PORT}`);
