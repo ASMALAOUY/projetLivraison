@@ -1,4 +1,3 @@
-
 import axios from 'axios'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 
@@ -24,12 +23,18 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401) {
-      await AsyncStorage.removeItem('token')
-      await AsyncStorage.removeItem('user')
-      // Navigation vers login (géré dans l'app)
+      await AsyncStorage.multiRemove(['token', 'user', 'role'])
+      // Émet un événement global capté par le RootNavigator
+      // pour rediriger vers Login sans importer navigation ici
+      if (api._onUnauthorized) api._onUnauthorized()
     }
     return Promise.reject(error)
   }
 )
+
+// Enregistrer le callback de redirection depuis le RootNavigator ou App.js :
+//   import api from './api/api'
+//   api._onUnauthorized = () => navigationRef.current?.replace('Login')
+
 
 export default api

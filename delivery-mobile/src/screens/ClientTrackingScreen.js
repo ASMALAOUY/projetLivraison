@@ -254,13 +254,18 @@ export default function ClientTrackingScreen({ navigation }) {
       const { data } = await api.get('/client/my-orders')
       setOrders(data || [])
     } catch (err) {
+      if (err.response?.status === 401) {
+        await AsyncStorage.multiRemove(['token', 'user', 'role'])
+        navigation.replace('Login')
+        return
+      }
       console.error('Erreur chargement commandes:', err)
       setOrders([])
     } finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [])
+  }, [navigation])
 
   useEffect(() => {
     autoRefresh.current = setInterval(() => loadOrders(true), 15000)
@@ -610,10 +615,10 @@ export default function ClientTrackingScreen({ navigation }) {
 
               <View style={styles.summaryCard}>
                 {[
-                  { i: '📍', l: 'Récupéré chez', v: form.pickupAddress || 'Entrepôt central' },
-                  { i: '🏠', l: 'Livré à',        v: form.address },
-                  { i: '👤', l: 'Destinataire',   v: `${user?.name} · ${user?.phone}` },
-                  { i: '🕐', l: 'Délai estimé',   v: "Aujourd'hui · 30–60 min" },
+                  { i: '', l: 'Récupéré chez', v: form.pickupAddress || 'Entrepôt central' },
+                  { i: '', l: 'Livré à',        v: form.address },
+                  { i: '', l: 'Destinataire',   v: `${user?.name} · ${user?.phone}` },
+                  { i: '', l: 'Délai estimé',   v: "Aujourd'hui · 30–60 min" },
                 ].map((r, i) => (
                   <View key={i} style={styles.summaryInfoRow}>
                     <Text style={styles.summaryInfoIcon}>{r.i}</Text>
@@ -918,7 +923,7 @@ if (view === 'detail' && selected) {
                       const items   = parseItems(order.items)
                       return (
                         <TouchableOpacity
-                          key={order.id}
+                          key={`active_${order.id}`}
                           style={styles.activeOrderCard}
                           onPress={() => { setSelected(order); setView('detail') }}
                         >
@@ -964,7 +969,7 @@ if (view === 'detail' && selected) {
                       const hasRated = !!order.rating
                       return (
                         <TouchableOpacity
-                          key={order.id}
+                          key={`past_${order.id}`}
                           style={styles.pastOrderCard}
                           onPress={() => { setSelected(order); setView('detail') }}
                         >

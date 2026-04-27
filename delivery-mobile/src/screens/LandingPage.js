@@ -191,9 +191,9 @@ export default function LandingPage() {
           </View>
           <View style={styles.features}>
             {[
-              { icon: '⚡', label: 'Livraison 30 min' },
-              { icon: '📍', label: 'Suivi GPS live' },
-              { icon: '💳', label: 'Paiement à la livraison' },
+              { icon: '', label: 'Livraison 30 min' },
+              { icon: '', label: 'Suivi GPS live' },
+              { icon: '', label: 'Paiement à la livraison' },
             ].map((item, idx) => (
               <View key={idx} style={styles.featureItem}>
                 <Text style={styles.featureIcon}>{item.icon}</Text>

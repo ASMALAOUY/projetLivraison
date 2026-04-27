@@ -17,7 +17,7 @@ app.get('/', (req, res) => res.json({ message: 'Backend démarré !' }));
 app.use('/api', routes);
 app.use(errorHandler);
 
-// ✅ Crée un livreur par défaut dans la table 'users' (role=driver)
+//  Crée un livreur par défaut dans la table 'users' (role=driver)
 // C'est cette table qu'utilise le système d'authentification
 async function createDefaultDriver() {
   try {
@@ -33,15 +33,15 @@ async function createDefaultDriver() {
         role:     'driver',
         status:   'active',
       });
-      console.log('✅ Livreur par défaut créé dans users (hassan / 0612345678 / 123456)');
+      console.log(' Livreur par défaut créé dans users (hassan / 0612345678 / 123456)');
     } else {
-      console.log('ℹ️ Livreur déjà existant dans users, création ignorée');
+      console.log(' Livreur déjà existant dans users, création ignorée');
     }
   } catch (err) {
     if (err.name === 'SequelizeUniqueConstraintError') {
-      console.log('ℹ️ Livreur déjà existant (contrainte unique)');
+      console.log(' Livreur déjà existant (contrainte unique)');
     } else {
-      console.error('⚠️ Erreur création livreur:', err.message);
+      console.error(' Erreur création livreur:', err.message);
     }
   }
 }
@@ -59,11 +59,11 @@ async function startServer() {
     //  '0.0.0.0' = écoute sur toutes les interfaces réseau
     // Nécessaire pour que les appareils Android/iOS accèdent au serveur
     app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Serveur sur http://0.0.0.0:${PORT}`);
-      console.log(`📱 Depuis mobile : http://192.168.8.114:${PORT}`);
+      console.log(` Serveur sur http://0.0.0.0:${PORT}`);
+      console.log(`Depuis mobile : http://192.168.8.114:${PORT}`);
     });
   } catch (err) {
-    console.error('❌ Erreur de démarrage :', err.message);
+    console.error(' Erreur de démarrage :', err.message);
   }
 }
 

@@ -112,7 +112,11 @@ router.get('/my-orders', auth, async (req, res, next) => {
       });
     }
 
-    res.json(result);
+    // Dédupliquer par point.id au cas où une jointure crée des doublons
+    const unique = result.filter((item, index, self) =>
+      index === self.findIndex(t => t.id === item.id)
+    )
+    res.json(unique)
   } catch (e) {
     console.error('ERREUR my-orders:', e.message);
     res.status(500).json({ error: e.message });

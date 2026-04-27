@@ -1,15 +1,17 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity,
-  StyleSheet, ScrollView, Alert, ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  ScrollView, Alert, ActivityIndicator,
 } from 'react-native';
 import api from '../api/api';
 import useAuthStore from '../store/authStore';
 
+const Y = '#F59E0B', F = '#D97706', DARK = '#1A1A18'
 const VEHICLES = ['Moto', 'Vélo', 'Voiture', 'Camionnette'];
+const VEHICLE_ICONS = { Moto: '', Vélo: '', Voiture: '', Camionnette: '' };
 
 export default function RegisterScreen({ navigation }) {
-  const [role,     setRole]    = useState('driver');
+  const [role,     setRole]    = useState('client');
   const [name,     setName]    = useState('');
   const [email,    setEmail]   = useState('');
   const [phone,    setPhone]   = useState('');
@@ -20,140 +22,124 @@ export default function RegisterScreen({ navigation }) {
   const { login } = useAuthStore();
 
   const handleRegister = async () => {
-    if (!name || !password) {
-      return Alert.alert('Erreur', 'Remplissez tous les champs obligatoires');
-    }
-    if (password !== confirm) {
-      return Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
-    }
+    if (!name || !password) return Alert.alert('Erreur', 'Remplissez tous les champs obligatoires');
+    if (password !== confirm) return Alert.alert('Erreur', 'Les mots de passe ne correspondent pas');
     setLoading(true);
     try {
       const body = { name, password, role };
       if (email)   body.email   = email;
       if (phone)   body.phone   = phone;
       if (vehicle) body.vehicle = vehicle;
-
       const { data } = await api.post('/auth/register', body);
       await login(data.token, data.user);
-
       if (data.user.role === 'driver') navigation.replace('Home');
       else navigation.replace('ClientTracking');
     } catch (err) {
       Alert.alert('Erreur', err.response?.data?.error || 'Erreur lors de la création');
-    } finally {
-      setLoading(false);
-    }
+    } finally { setLoading(false); }
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+    <ScrollView style={s.root} contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
 
-      <TouchableOpacity style={styles.back} onPress={() => navigation.goBack()}>
-        <Text style={styles.backTxt}>← Retour</Text>
+      {/* Back */}
+      <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
+        <Text style={s.backTxt}>← Retour</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>Créer un compte</Text>
-      <Text style={styles.subtitle}>Choisissez votre rôle</Text>
+      {/* Brand mini */}
+      <View style={s.brandRow}>
+        <View style={s.brandIcon}><Text style={{ fontSize: 18 }}></Text></View>
+        <Text style={s.brandName}>DelivTrack</Text>
+      </View>
 
-      <View style={styles.roleRow}>
-        {['driver', 'client'].map(r => (
-          <TouchableOpacity key={r}
-            style={[styles.roleBtn, role === r && styles.roleBtnActive]}
-            onPress={() => setRole(r)}>
-            <Text style={[styles.roleTxt, role === r && styles.roleTxtActive]}>
-              {r === 'driver' ? 'Livreur' : 'Client'}
-            </Text>
+      <Text style={s.title}>Créer un compte</Text>
+      <Text style={s.sub}>Rejoignez-nous gratuitement</Text>
+
+      {/* Role tabs */}
+      <View style={s.roleTabs}>
+        {[{ key: 'client', label: ' Client', desc: 'Je commande' }, { key: 'driver', label: ' Livreur', desc: 'Je livre' }].map(r => (
+          <TouchableOpacity key={r.key} onPress={() => { setRole(r.key); setVehicle(''); }}
+            style={[s.roleTab, role === r.key && s.roleTabActive]}>
+            <Text style={[s.roleTabLabel, role === r.key && s.roleTabLabelActive]}>{r.label}</Text>
+            <Text style={[s.roleTabDesc, role === r.key && { color: DARK }]}>{r.desc}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <Field label="Nom complet *" value={name} onChange={setName} placeholder="Prénom Nom" />
+      {/* Fields */}
+      <Field label="NOM COMPLET *" value={name} onChange={setName} placeholder="Prénom Nom" />
+      {role === 'client' && <Field label="EMAIL *" value={email} onChange={setEmail} placeholder="email@exemple.com" type="email-address" />}
+      <Field label={role === 'driver' ? 'TÉLÉPHONE *' : 'TÉLÉPHONE'} value={phone} onChange={setPhone} placeholder="06xxxxxxxx" type="phone-pad" />
 
-      {(role === 'client') && (
-        <Field label="Email *" value={email} onChange={setEmail}
-          placeholder="email@exemple.com" type="email-address" />
-      )}
-
-      <Field label={role === 'driver' ? 'Téléphone *' : 'Téléphone'}
-        value={phone} onChange={setPhone} placeholder="06xxxxxxxx" type="phone-pad" />
-
+      {/* Vehicle picker */}
       {role === 'driver' && (
-        <View style={styles.fieldWrap}>
-          <Text style={styles.label}>Véhicule *</Text>
-          <View style={styles.vehicleRow}>
+        <View style={s.fieldWrap}>
+          <Text style={s.label}>VÉHICULE *</Text>
+          <View style={s.vehicleGrid}>
             {VEHICLES.map(v => (
-              <TouchableOpacity key={v}
-                style={[styles.vehicleBtn, vehicle === v && styles.vehicleBtnActive]}
-                onPress={() => setVehicle(v)}>
-                <Text style={[styles.vehicleTxt, vehicle === v && styles.vehicleTxtActive]}>{v}</Text>
+              <TouchableOpacity key={v} onPress={() => setVehicle(v)}
+                style={[s.vehicleBtn, vehicle === v && s.vehicleBtnActive]}>
+                <Text style={s.vehicleIcon}>{VEHICLE_ICONS[v]}</Text>
+                <Text style={[s.vehicleTxt, vehicle === v && s.vehicleTxtActive]}>{v}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
       )}
 
-      <Field label="Mot de passe *" value={password} onChange={setPass}
-        placeholder="Min. 6 caractères" secure />
-      <Field label="Confirmer *" value={confirm} onChange={setConfirm}
-        placeholder="••••••••" secure />
+      <Field label="MOT DE PASSE *" value={password} onChange={setPass} placeholder="Min. 6 caractères" secure />
+      <Field label="CONFIRMER *" value={confirm} onChange={setConfirm} placeholder="••••••••" secure />
 
-      <TouchableOpacity
-        style={[styles.btnPrimary, loading && { opacity: 0.6 }]}
-        onPress={handleRegister} disabled={loading}>
-        {loading
-          ? <ActivityIndicator color="#fff" />
-          : <Text style={styles.btnPrimaryTxt}>Créer mon compte</Text>
-        }
+      <TouchableOpacity style={[s.btn, loading && { opacity: 0.6 }]} onPress={handleRegister} disabled={loading}>
+        {loading ? <ActivityIndicator color={DARK} /> : <Text style={s.btnTxt}>Créer mon compte →</Text>}
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.linkTxt}>Déjà un compte ? <Text style={styles.link}>Se connecter</Text></Text>
+        <Text style={s.link}>Déjà un compte ? <Text style={s.linkAccent}>Se connecter</Text></Text>
       </TouchableOpacity>
-
     </ScrollView>
   );
 }
 
 function Field({ label, value, onChange, placeholder, type = 'default', secure = false }) {
   return (
-    <View style={styles.fieldWrap}>
-      <Text style={styles.label}>{label}</Text>
-      <TextInput
-        style={styles.input}
-        value={value}
-        onChangeText={onChange}
-        placeholder={placeholder}
-        keyboardType={type}
-        secureTextEntry={secure}
-        autoCapitalize="none"
-        placeholderTextColor="#9CA3AF"
-      />
+    <View style={s.fieldWrap}>
+      <Text style={s.label}>{label}</Text>
+      <TextInput style={s.input} value={value} onChangeText={onChange}
+        placeholder={placeholder} keyboardType={type} secureTextEntry={secure}
+        autoCapitalize="none" placeholderTextColor="#9CA3AF" />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container:  { flex: 1, backgroundColor: '#F8FAFC' },
-  scroll:     { padding: 24, paddingTop: 40 },
-  back:       { marginBottom: 20 },
-  backTxt:    { fontSize: 14, color: '#2563EB', fontWeight: '600' },
-  title:      { fontSize: 24, fontWeight: '800', color: '#111827', marginBottom: 4 },
-  subtitle:   { fontSize: 14, color: '#9CA3AF', marginBottom: 24 },
-  roleRow:    { flexDirection: 'row', backgroundColor: '#F1F5F9', borderRadius: 12, padding: 4, marginBottom: 20 },
-  roleBtn:    { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
-  roleBtnActive: { backgroundColor: '#fff', elevation: 2 },
-  roleTxt:    { fontSize: 13, color: '#9CA3AF', fontWeight: '500' },
-  roleTxtActive: { color: '#2563EB', fontWeight: '700' },
-  fieldWrap:  { marginBottom: 14 },
-  label:      { fontSize: 12, fontWeight: '700', color: '#6B7280', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6 },
-  input:      { backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13, fontSize: 14, color: '#111827' },
-  vehicleRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  vehicleBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#fff' },
-  vehicleBtnActive: { borderColor: '#2563EB', backgroundColor: '#EFF6FF' },
-  vehicleTxt: { fontSize: 13, color: '#6B7280' },
-  vehicleTxtActive: { color: '#2563EB', fontWeight: '700' },
-  btnPrimary: { backgroundColor: '#2563EB', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8, marginBottom: 16 },
-  btnPrimaryTxt: { color: '#fff', fontSize: 15, fontWeight: '700' },
-  linkTxt:    { textAlign: 'center', fontSize: 13, color: '#9CA3AF' },
-  link:       { color: '#2563EB', fontWeight: '700' },
+const s = StyleSheet.create({
+  root:    { flex: 1, backgroundColor: '#FAFAF8' },
+  scroll:  { padding: 24, paddingTop: 52, paddingBottom: 40 },
+  backBtn: { marginBottom: 24 },
+  backTxt: { fontSize: 14, color: F, fontWeight: '700' },
+  brandRow:{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 28 },
+  brandIcon:{ width: 36, height: 36, borderRadius: 10, backgroundColor: Y, alignItems: 'center', justifyContent: 'center' },
+  brandName:{ fontSize: 18, fontWeight: '800', color: DARK },
+  title:   { fontSize: 28, fontWeight: '900', color: DARK, letterSpacing: -0.5, marginBottom: 6 },
+  sub:     { fontSize: 14, color: '#888', marginBottom: 28 },
+  roleTabs:{ flexDirection: 'row', gap: 12, marginBottom: 24 },
+  roleTab: { flex: 1, padding: 14, borderRadius: 16, borderWidth: 2, borderColor: '#E5E7EB', backgroundColor: '#fff', alignItems: 'center' },
+  roleTabActive:{ borderColor: Y, backgroundColor: Y },
+  roleTabLabel:{ fontSize: 14, fontWeight: '700', color: '#888', marginBottom: 2 },
+  roleTabLabelActive:{ color: DARK },
+  roleTabDesc:{ fontSize: 11, color: '#CCC' },
+  fieldWrap:{ marginBottom: 18 },
+  label:   { fontSize: 11, fontWeight: '800', color: '#888', letterSpacing: 1.5, marginBottom: 8 },
+  input:   { backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#E5E7EB', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15, color: DARK },
+  vehicleGrid:{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  vehicleBtn:{ paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12, borderWidth: 1.5, borderColor: '#E5E7EB', backgroundColor: '#fff', alignItems: 'center', minWidth: 80 },
+  vehicleBtnActive:{ borderColor: Y, backgroundColor: '#FFFBEB' },
+  vehicleIcon:{ fontSize: 20, marginBottom: 4 },
+  vehicleTxt:{ fontSize: 12, fontWeight: '600', color: '#888' },
+  vehicleTxtActive:{ color: F, fontWeight: '800' },
+  btn:     { backgroundColor: Y, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 20, marginTop: 8 },
+  btnTxt:  { color: DARK, fontSize: 16, fontWeight: '800' },
+  link:    { textAlign: 'center', fontSize: 13, color: '#AAA', marginBottom: 20 },
+  linkAccent:{ color: F, fontWeight: '700' },
 });

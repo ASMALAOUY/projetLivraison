@@ -4,6 +4,25 @@ import StatusBadge from '../../components/StatusBadge'
 import LoadingSpinner from '../../components/LoadingSpinner'
 import api from '../../api/api'
 
+// ─── Palette ──────────────────────────────────────────────────────────────────
+const C = {
+  yellow:      '#F59E0B',
+  yellowDark:  '#D97706',
+  yellowLight: '#FEF3C7',
+  yellowBg:    '#FFFBEB',
+  black:       '#1A1A18',
+  blackSoft:   '#2D2D2A',
+  gray:        '#6B7280',
+  grayLight:   '#F3F3F0',
+  bg:          '#FAFAF8',
+  white:       '#FFFFFF',
+  border:      '#E8E6DF',
+  green:       '#16A34A',
+  greenBg:     '#F0FDF4',
+  red:         '#DC2626',
+  redBg:       '#FEF2F2',
+}
+
 export default function OrdersPage() {
   const [orders,   setOrders]   = useState([])
   const [drivers,  setDrivers]  = useState([])
@@ -13,12 +32,9 @@ export default function OrdersPage() {
   const [selected, setSelected] = useState(null)
   const [creating, setCreating] = useState(false)
 
-  // Formulaire ajout de point
   const [showAddPoint, setShowAddPoint] = useState(false)
   const [addingPoint,  setAddingPoint]  = useState(false)
-  const [pointForm,    setPointForm]    = useState({
-    clientName: '', address: '', phone: '', note: ''
-  })
+  const [pointForm,    setPointForm]    = useState({ clientName: '', address: '', phone: '', note: '' })
   const [pointError,   setPointError]   = useState('')
   const [pointSuccess, setPointSuccess] = useState('')
 
@@ -74,149 +90,287 @@ export default function OrdersPage() {
     setAddingPoint(true)
     try {
       await api.post('/points', {
-        orderId:    selected,
-        clientName: pointForm.clientName,
-        address:    pointForm.address,
-        latitude:   31.6295,
-        longitude:  -7.9811,
-        sequence:   points.length + 1,
+        orderId:     selected,
+        clientName:  pointForm.clientName,
+        address:     pointForm.address,
+        latitude:    31.6295,
+        longitude:   -7.9811,
+        sequence:    points.length + 1,
         failureNote: pointForm.note || null,
       })
       setPointSuccess(`Point n°${points.length + 1} ajouté avec succès !`)
       setPointForm({ clientName: '', address: '', phone: '', note: '' })
-      // Recharger les points
       const { data } = await api.get(`/points/order/${selected}`)
       setPoints(data)
       setTimeout(() => setPointSuccess(''), 3000)
     } catch (err) {
-      setPointError(err.response?.data?.error || 'Erreur lors de l\'ajout')
+      setPointError(err.response?.data?.error || "Erreur lors de l'ajout")
     } finally {
       setAddingPoint(false)
     }
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-5xl mx-auto px-4 py-8 space-y-6">
-        <h1 className="text-2xl font-bold text-gray-800">Gestion des tournées</h1>
+  const inputStyle = {
+    width: '100%', border: `1px solid ${C.border}`, borderRadius: 10,
+    padding: '10px 14px', fontSize: 13, color: C.black, background: C.white,
+    outline: 'none', boxSizing: 'border-box',
+    fontFamily: 'inherit',
+  }
 
-        {/* Formulaire nouvelle tournée */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-          <h2 className="font-semibold text-gray-700 mb-4">Nouvelle tournée</h2>
-          <div className="flex gap-3 flex-wrap">
-            <select
-              value={form.driverId}
-              onChange={e => setForm({ ...form, driverId: e.target.value })}
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            >
-              <option value="">Choisir un livreur…</option>
-              {drivers.map(d => (
-                <option key={d.id} value={d.id}>{d.name} — {d.vehicle}</option>
-              ))}
-            </select>
-            <input
-              type="date"
-              value={form.date}
-              onChange={e => setForm({ ...form, date: e.target.value })}
-              className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+  const labelStyle = {
+    display: 'block', fontSize: 10, fontWeight: 700,
+    color: C.gray, marginBottom: 6, letterSpacing: '0.5px',
+  }
+
+  return (
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+      <Navbar />
+
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 16px' }}>
+
+        {/* ── Titre page ──────────────────────────────────────────────── */}
+        <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-end', gap: 16 }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 800, color: C.yellowDark, letterSpacing: 1, marginBottom: 4 }}>
+              MANAGEMENT
+            </div>
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: C.black, letterSpacing: '-0.5px' }}>
+              Gestion des tournées
+            </h1>
+          </div>
+          <div style={{
+            marginLeft: 'auto', background: C.yellowBg, border: `1px solid ${C.yellowLight}`,
+            borderRadius: 10, padding: '6px 14px',
+            fontSize: 12, fontWeight: 700, color: C.yellowDark,
+          }}>
+            {orders.length} tournée{orders.length !== 1 ? 's' : ''}
+          </div>
+        </div>
+
+        {/* ── Formulaire nouvelle tournée ──────────────────────────────── */}
+        <div style={{
+          background: C.white, borderRadius: 18,
+          border: `1px solid ${C.border}`,
+          padding: 24, marginBottom: 20,
+          boxShadow: '0 2px 12px rgba(26,26,24,0.04)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: 10,
+              background: C.yellow, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', fontSize: 16,
+            }}>📦</div>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: C.black }}>Nouvelle tournée</div>
+              <div style={{ fontSize: 11, color: C.gray }}>Assigner un livreur à une date</div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <label style={labelStyle}>LIVREUR</label>
+              <select
+                value={form.driverId}
+                onChange={e => setForm({ ...form, driverId: e.target.value })}
+                style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}
+              >
+                <option value="">Choisir un livreur…</option>
+                {drivers.map(d => (
+                  <option key={d.id} value={d.id}>{d.name} — {d.vehicle}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={labelStyle}>DATE</label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={e => setForm({ ...form, date: e.target.value })}
+                style={{ ...inputStyle, width: 'auto' }}
+              />
+            </div>
+
             <button
               onClick={createOrder}
               disabled={!form.driverId || !form.date || creating}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-40"
+              style={{
+                background: (!form.driverId || !form.date || creating) ? C.grayLight : C.yellow,
+                color:      (!form.driverId || !form.date || creating) ? C.gray : C.black,
+                border: 'none', borderRadius: 10, padding: '10px 20px',
+                fontSize: 13, fontWeight: 800, cursor: creating ? 'not-allowed' : 'pointer',
+                transition: 'all .15s', whiteSpace: 'nowrap',
+                boxShadow: (!form.driverId || !form.date || creating) ? 'none' : `0 4px 16px rgba(245,158,11,0.3)`,
+              }}
             >
-              {creating ? 'Création…' : '+ Créer'}
+              {creating ? 'Création…' : '+ Créer la tournée'}
             </button>
           </div>
+
           {drivers.length === 0 && (
-            <p className="text-xs text-orange-500 mt-3">
-              ⚠️ Aucun livreur trouvé — créez d'abord un compte livreur
-            </p>
+            <div style={{
+              marginTop: 14, fontSize: 12, color: C.yellowDark,
+              background: C.yellowBg, border: `1px solid ${C.yellowLight}`,
+              borderRadius: 8, padding: '8px 12px',
+            }}>
+              ⚠️ Aucun livreur trouvé — créez d'abord un compte livreur dans la section Équipe
+            </div>
           )}
         </div>
 
-        {/* Liste des tournées */}
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          {loading ? <LoadingSpinner /> : orders.length === 0 ? (
-            <div className="text-center py-12 text-gray-400">Aucune tournée créée</div>
+        {/* ── Table des tournées ───────────────────────────────────────── */}
+        <div style={{
+          background: C.white, borderRadius: 18,
+          border: `1px solid ${C.border}`,
+          overflow: 'hidden',
+          boxShadow: '0 2px 12px rgba(26,26,24,0.04)',
+        }}>
+          {loading ? (
+            <div style={{ padding: 40 }}><LoadingSpinner /></div>
+          ) : orders.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: C.gray }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.black, marginBottom: 6 }}>
+                Aucune tournée créée
+              </div>
+              <div style={{ fontSize: 13 }}>Utilisez le formulaire ci-dessus pour commencer</div>
+            </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 uppercase tracking-wide">
-                <tr>
-                  <th className="px-6 py-3 text-left">Date</th>
-                  <th className="px-6 py-3 text-left">Livreur</th>
-                  <th className="px-6 py-3 text-left">Véhicule</th>
-                  <th className="px-6 py-3 text-left">Points</th>
-                  <th className="px-6 py-3 text-left">Statut</th>
-                  <th className="px-6 py-3 text-left">Actions</th>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: C.black }}>
+                  {['Date', 'Livreur', 'Véhicule', 'Points', 'Statut', 'Actions'].map(h => (
+                    <th key={h} style={{
+                      padding: '12px 20px', textAlign: 'left',
+                      fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)',
+                      letterSpacing: 1,
+                    }}>{h.toUpperCase()}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-50">
-                {orders.map(o => (
+              <tbody>
+                {orders.map((o, idx) => (
                   <React.Fragment key={o.id}>
-                    <tr className="hover:bg-gray-50 transition">
-                      <td className="px-6 py-4 font-medium">{o.date}</td>
-                      <td className="px-6 py-4 text-gray-600">{o.Driver?.name || '—'}</td>
-                      <td className="px-6 py-4 text-gray-500">{o.Driver?.vehicle || '—'}</td>
-                      <td className="px-6 py-4 text-gray-500">
-                        {o.DeliveryPoints?.length ?? 0} point(s)
+                    <tr style={{
+                      background: selected === o.id ? C.yellowBg : idx % 2 === 0 ? C.white : C.bg,
+                      borderBottom: `1px solid ${C.border}`,
+                      transition: 'background .1s',
+                    }}>
+                      <td style={{ padding: '14px 20px', fontWeight: 700, color: C.black }}>{o.date}</td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{
+                            width: 30, height: 30, borderRadius: '50%',
+                            background: C.black, color: C.yellow,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 11, fontWeight: 800, flexShrink: 0,
+                          }}>
+                            {(o.Driver?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
+                          </div>
+                          <span style={{ color: C.black, fontWeight: 600 }}>{o.Driver?.name || '—'}</span>
+                        </div>
                       </td>
-                      <td className="px-6 py-4"><StatusBadge status={o.status} /></td>
-                      <td className="px-6 py-4">
+                      <td style={{ padding: '14px 20px', color: C.gray }}>{o.Driver?.vehicle || '—'}</td>
+                      <td style={{ padding: '14px 20px' }}>
+                        <span style={{
+                          background: C.yellowBg, color: C.yellowDark,
+                          border: `1px solid ${C.yellowLight}`,
+                          borderRadius: 8, padding: '3px 10px',
+                          fontSize: 12, fontWeight: 700,
+                        }}>
+                          {o.DeliveryPoints?.length ?? 0} pt{(o.DeliveryPoints?.length ?? 0) !== 1 ? 's' : ''}
+                        </span>
+                      </td>
+                      <td style={{ padding: '14px 20px' }}><StatusBadge status={o.status} /></td>
+                      <td style={{ padding: '14px 20px' }}>
                         <button
                           onClick={() => viewPoints(o.id)}
-                          className="text-blue-600 hover:text-blue-800 text-xs font-medium hover:underline"
+                          style={{
+                            background: selected === o.id ? C.yellow : 'transparent',
+                            color:      selected === o.id ? C.black : C.yellowDark,
+                            border:     `1px solid ${selected === o.id ? C.yellow : C.yellowLight}`,
+                            borderRadius: 8, padding: '5px 12px',
+                            fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                            transition: 'all .15s',
+                          }}
                         >
-                          {selected === o.id ? 'Masquer ▲' : 'Voir points ▼'}
+                          {selected === o.id ? '▲ Masquer' : '▼ Voir points'}
                         </button>
                       </td>
                     </tr>
 
+                    {/* ── Panneau points ───────────────────────────────── */}
                     {selected === o.id && (
                       <tr>
-                        <td colSpan={6} className="px-6 py-4 bg-blue-50">
+                        <td colSpan={6} style={{ padding: '20px 24px', background: C.yellowBg, borderBottom: `1px solid ${C.border}` }}>
 
-                          {/* Liste des points existants */}
+                          {/* Liste points existants */}
                           {points.length === 0 ? (
-                            <p className="text-xs text-gray-400 text-center py-2 mb-3">
-                              Aucun point de livraison — ajoutez-en ci-dessous
-                            </p>
+                            <div style={{
+                              textAlign: 'center', padding: '16px', marginBottom: 16,
+                              color: C.gray, fontSize: 13,
+                              background: C.white, borderRadius: 12,
+                              border: `1px dashed ${C.border}`,
+                            }}>
+                              Aucun point — ajoutez-en ci-dessous
+                            </div>
                           ) : (
-                            <div className="space-y-2 mb-4">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
                               {points.map(p => {
                                 let items = p.items || []
                                 if (typeof items === 'string') {
                                   try { items = JSON.parse(items) } catch { items = [] }
                                 }
                                 return (
-                                  <div key={p.id}
-                                    className="flex items-center justify-between bg-white rounded-xl px-4 py-3 border border-blue-100">
-                                    <div className="flex items-center gap-3">
-                                      <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                                  <div key={p.id} style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    background: C.white, borderRadius: 14,
+                                    padding: '12px 16px',
+                                    border: `1px solid ${C.border}`,
+                                    boxShadow: '0 1px 4px rgba(26,26,24,0.04)',
+                                  }}>
+                                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                                      <div style={{
+                                        width: 30, height: 30, borderRadius: 8,
+                                        background: C.black, color: C.yellow,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: 12, fontWeight: 800, flexShrink: 0,
+                                      }}>
                                         {p.sequence}
                                       </div>
                                       <div>
-                                        <p className="text-sm font-semibold text-gray-800">{p.clientName}</p>
-                                        <p className="text-xs text-gray-400">{p.address}</p>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.black }}>
+                                          {p.clientName}
+                                        </div>
+                                        <div style={{ fontSize: 11, color: C.gray, marginTop: 2 }}>
+                                          {p.address}
+                                        </div>
                                         {items.length > 0 && (
-                                          <div className="flex gap-1 mt-1">
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
                                             {items.map((item, i) => (
-                                              <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                                {item.emoji} {item.name} ×{item.qty}
+                                              <span key={i} style={{
+                                                fontSize: 10, background: C.yellowBg,
+                                                color: C.yellowDark, borderRadius: 20,
+                                                padding: '2px 8px', fontWeight: 600,
+                                                border: `1px solid ${C.yellowLight}`,
+                                              }}>
+                                                {item.name} ×{item.qty}
                                               </span>
                                             ))}
                                             {p.totalPrice && (
-                                              <span className="text-xs font-bold text-blue-600 ml-1">
+                                              <span style={{
+                                                fontSize: 11, fontWeight: 800,
+                                                color: C.yellowDark, marginLeft: 4,
+                                              }}>
                                                 {p.totalPrice} MAD
                                               </span>
                                             )}
                                           </div>
                                         )}
                                         {p.failureNote && (
-                                          <p className="text-xs text-red-500 mt-0.5">
-                                            Note : {p.failureNote}
-                                          </p>
+                                          <div style={{ fontSize: 11, color: C.red, marginTop: 4 }}>
+                                            ⚠️ {p.failureNote}
+                                          </div>
                                         )}
                                       </div>
                                     </div>
@@ -227,122 +381,163 @@ export default function OrdersPage() {
                             </div>
                           )}
 
-                          {/* Bouton afficher/masquer formulaire */}
-                          <div className="flex justify-between items-center mb-3">
-                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                              {points.length} point(s) de passage
-                            </p>
+                          {/* Barre actions */}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                            <span style={{
+                              fontSize: 10, fontWeight: 800, color: C.yellowDark, letterSpacing: 1,
+                            }}>
+                              {points.length} POINT{points.length !== 1 ? 'S' : ''} DE PASSAGE
+                            </span>
                             <button
                               onClick={() => {
                                 setShowAddPoint(!showAddPoint)
                                 setPointError(''); setPointSuccess('')
                                 setPointForm({ clientName: '', address: '', phone: '', note: '' })
                               }}
-                              className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition ${
-                                showAddPoint
-                                  ? 'border-gray-300 text-gray-500 hover:bg-gray-100'
-                                  : 'border-blue-300 text-blue-600 hover:bg-blue-50'
-                              }`}
+                              style={{
+                                background: showAddPoint ? C.white : C.yellow,
+                                color:      showAddPoint ? C.gray : C.black,
+                                border:     `1px solid ${showAddPoint ? C.border : C.yellow}`,
+                                borderRadius: 10, padding: '7px 14px',
+                                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                                transition: 'all .15s',
+                                boxShadow: showAddPoint ? 'none' : `0 4px 12px rgba(245,158,11,0.25)`,
+                              }}
                             >
                               {showAddPoint ? '✕ Annuler' : '+ Ajouter un point'}
                             </button>
                           </div>
 
-                          {/* Formulaire ajout de point */}
+                          {/* Formulaire ajout point */}
                           {showAddPoint && (
-                            <form onSubmit={handleAddPoint}
-                              className="bg-white rounded-xl border border-blue-200 p-4 space-y-3">
-                              <p className="text-sm font-semibold text-gray-700">
-                                Nouveau point de livraison — n°{points.length + 1}
-                              </p>
+                            <form onSubmit={handleAddPoint} style={{
+                              background: C.white, borderRadius: 14,
+                              border: `1px solid ${C.border}`,
+                              padding: 20,
+                              boxShadow: '0 4px 20px rgba(26,26,24,0.08)',
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                <div style={{
+                                  width: 28, height: 28, borderRadius: 8,
+                                  background: C.yellow, display: 'flex',
+                                  alignItems: 'center', justifyContent: 'center',
+                                  fontSize: 14,
+                                }}>📍</div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: C.black }}>
+                                  Nouveau point de livraison — n°{points.length + 1}
+                                </div>
+                              </div>
 
                               {pointError && (
-                                <div className="bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg px-3 py-2">
+                                <div style={{
+                                  background: C.redBg, border: `1px solid #FECACA`,
+                                  color: C.red, fontSize: 12, borderRadius: 8,
+                                  padding: '8px 12px', marginBottom: 12,
+                                }}>
                                   {pointError}
                                 </div>
                               )}
                               {pointSuccess && (
-                                <div className="bg-green-50 border border-green-200 text-green-700 text-xs rounded-lg px-3 py-2">
+                                <div style={{
+                                  background: C.greenBg, border: `1px solid #BBF7D0`,
+                                  color: C.green, fontSize: 12, borderRadius: 8,
+                                  padding: '8px 12px', marginBottom: 12,
+                                }}>
                                   {pointSuccess}
                                 </div>
                               )}
 
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                                 <div>
-                                  <label className="block text-xs font-semibold text-gray-500 mb-1">
-                                    Nom du client *
-                                  </label>
+                                  <label style={labelStyle}>NOM DU CLIENT *</label>
                                   <input
                                     type="text"
                                     value={pointForm.clientName}
                                     onChange={e => setPointForm({ ...pointForm, clientName: e.target.value })}
                                     placeholder="Ex: Ahmed Benali"
                                     required
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    style={inputStyle}
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-xs font-semibold text-gray-500 mb-1">
-                                    Téléphone
-                                  </label>
+                                  <label style={labelStyle}>TÉLÉPHONE</label>
                                   <input
                                     type="tel"
                                     value={pointForm.phone}
                                     onChange={e => setPointForm({ ...pointForm, phone: e.target.value })}
                                     placeholder="Ex: 0612345678"
-                                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    style={inputStyle}
                                   />
                                 </div>
                               </div>
 
-                              <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">
-                                  Adresse de livraison *
-                                </label>
+                              <div style={{ marginBottom: 12 }}>
+                                <label style={labelStyle}>ADRESSE DE LIVRAISON *</label>
                                 <input
                                   type="text"
                                   value={pointForm.address}
                                   onChange={e => setPointForm({ ...pointForm, address: e.target.value })}
                                   placeholder="Ex: 12 Rue Mohammed V, Marrakech"
                                   required
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  style={inputStyle}
                                 />
                               </div>
 
-                              <div>
-                                <label className="block text-xs font-semibold text-gray-500 mb-1">
-                                  Instructions (optionnel)
-                                </label>
+                              <div style={{ marginBottom: 16 }}>
+                                <label style={labelStyle}>INSTRUCTIONS (OPTIONNEL)</label>
                                 <input
                                   type="text"
                                   value={pointForm.note}
                                   onChange={e => setPointForm({ ...pointForm, note: e.target.value })}
                                   placeholder="Ex: Sonnez au portail, 2ème étage…"
-                                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                  style={inputStyle}
                                 />
                               </div>
 
-                              <div className="flex gap-2 pt-1">
+                              <div style={{ display: 'flex', gap: 10 }}>
                                 <button
                                   type="submit"
                                   disabled={addingPoint}
-                                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 text-sm font-semibold transition disabled:opacity-50 flex items-center justify-center gap-2"
+                                  style={{
+                                    flex: 1, background: addingPoint ? C.grayLight : C.yellow,
+                                    color: addingPoint ? C.gray : C.black,
+                                    border: 'none', borderRadius: 10, padding: '11px 0',
+                                    fontSize: 13, fontWeight: 800,
+                                    cursor: addingPoint ? 'not-allowed' : 'pointer',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                    boxShadow: addingPoint ? 'none' : `0 4px 14px rgba(245,158,11,0.3)`,
+                                    transition: 'all .15s',
+                                  }}
                                 >
                                   {addingPoint ? (
-                                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"/>Ajout…</>
+                                    <>
+                                      <div style={{
+                                        width: 14, height: 14,
+                                        border: `2px solid ${C.gray}`,
+                                        borderTopColor: 'transparent',
+                                        borderRadius: '50%',
+                                        animation: 'spin 0.7s linear infinite',
+                                      }} />
+                                      Ajout en cours…
+                                    </>
                                   ) : `✓ Ajouter le point n°${points.length + 1}`}
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => { setShowAddPoint(false); setPointError('') }}
-                                  className="px-4 py-2 border border-gray-200 text-gray-500 rounded-lg text-sm hover:bg-gray-50"
+                                  style={{
+                                    padding: '11px 18px',
+                                    background: C.white,
+                                    border: `1px solid ${C.border}`,
+                                    borderRadius: 10, color: C.gray,
+                                    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                  }}
                                 >
                                   Annuler
                                 </button>
                               </div>
                             </form>
                           )}
-
                         </td>
                       </tr>
                     )}
@@ -353,6 +548,12 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        input:focus, select:focus { outline: 2px solid ${C.yellow}; outline-offset: -1px; }
+        tr:hover td { background: ${C.yellowBg} !important; transition: background .1s; }
+      `}</style>
     </div>
   )
 }

@@ -88,7 +88,7 @@ export default function DashboardPage() {
             <div style={s.twoCol}>
               {/* Livreurs */}
               <div style={s.card}>
-                <h2 style={s.cardTitle}>🛵 Livreurs ({drivers.length})</h2>
+                <h2 style={s.cardTitle}> Livreurs ({drivers.length})</h2>
                 {drivers.length === 0 ? (
                   <p style={s.empty}>Aucun livreur enregistré</p>
                 ) : drivers.map(d => {
@@ -108,7 +108,7 @@ export default function DashboardPage() {
 
               {/* Dernières commandes */}
               <div style={s.card}>
-                <h2 style={s.cardTitle}>📦 Dernières commandes</h2>
+                <h2 style={s.cardTitle}> Dernières commandes</h2>
                 {orders.length === 0 ? (
                   <p style={s.empty}>Aucune commande</p>
                 ) : orders.slice(0, 6).map(o => {
@@ -116,7 +116,7 @@ export default function DashboardPage() {
                   const items = parseItems(pts[0]?.items)
                   return (
                     <div key={o.id} style={s.orderRow}>
-                      <div style={s.orderIcon}>📦</div>
+                      <div style={s.orderIcon}></div>
                       <div style={{ flex: 1 }}>
                         <p style={s.orderClient}>{pts[0]?.clientName || '—'}</p>
                         <p style={s.orderSub}>{o.Driver?.name || 'Non assigné'} · {o.date}</p>
