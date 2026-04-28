@@ -1,26 +1,20 @@
 import React, { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar'
 import StatusBadge from '../../components/StatusBadge'
-import LoadingSpinner from '../../components/LoadingSpinner'
 import api from '../../api/api'
 
 // ─── Palette ──────────────────────────────────────────────────────────────────
 const C = {
-  yellow:      '#F59E0B',
-  yellowDark:  '#D97706',
-  yellowLight: '#FEF3C7',
-  yellowBg:    '#FFFBEB',
-  black:       '#1A1A18',
-  blackSoft:   '#2D2D2A',
-  gray:        '#6B7280',
-  grayLight:   '#F3F3F0',
-  bg:          '#FAFAF8',
-  white:       '#FFFFFF',
-  border:      '#E8E6DF',
-  green:       '#16A34A',
-  greenBg:     '#F0FDF4',
-  red:         '#DC2626',
-  redBg:       '#FEF2F2',
+  brand:    '#FF6B35',
+  dark:     '#1A1A2E',
+  bg:       '#F7F8FA',
+  card:     '#FFFFFF',
+  border:   '#EDEEF2',
+  textPrimary:   '#1A1A2E',
+  textSecondary: '#8A8FA8',
+  textMuted:     '#B5B9CC',
+  green:    '#00B14F',
+  red:      '#EF4444',
 }
 
 export default function OrdersPage() {
@@ -90,15 +84,15 @@ export default function OrdersPage() {
     setAddingPoint(true)
     try {
       await api.post('/points', {
-        orderId:     selected,
-        clientName:  pointForm.clientName,
-        address:     pointForm.address,
-        latitude:    31.6295,
-        longitude:   -7.9811,
-        sequence:    points.length + 1,
+        orderId:    selected,
+        clientName: pointForm.clientName,
+        address:    pointForm.address,
+        latitude:   31.6295,
+        longitude:  -7.9811,
+        sequence:   points.length + 1,
         failureNote: pointForm.note || null,
       })
-      setPointSuccess(`Point n°${points.length + 1} ajouté avec succès !`)
+      setPointSuccess(`Point n°${points.length + 1} ajoute avec succes !`)
       setPointForm({ clientName: '', address: '', phone: '', note: '' })
       const { data } = await api.get(`/points/order/${selected}`)
       setPoints(data)
@@ -110,71 +104,72 @@ export default function OrdersPage() {
     }
   }
 
-  const inputStyle = {
-    width: '100%', border: `1px solid ${C.border}`, borderRadius: 10,
-    padding: '10px 14px', fontSize: 13, color: C.black, background: C.white,
-    outline: 'none', boxSizing: 'border-box',
-    fontFamily: 'inherit',
+  const inputSt = {
+    width: '100%', border: `1.5px solid ${C.border}`, borderRadius: 11,
+    padding: '10px 14px', fontSize: 13, color: C.dark, background: C.card,
+    outline: 'none', boxSizing: 'border-box', fontFamily: 'inherit',
+    transition: 'border-color .15s',
   }
-
-  const labelStyle = {
-    display: 'block', fontSize: 10, fontWeight: 700,
-    color: C.gray, marginBottom: 6, letterSpacing: '0.5px',
+  const labelSt = {
+    display: 'block', fontSize: 10, fontWeight: 800,
+    color: C.textSecondary, marginBottom: 7, letterSpacing: 1.2,
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: "'Segoe UI', system-ui, sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
       <Navbar />
 
-      <div style={{ maxWidth: 900, margin: '0 auto', padding: '32px 16px' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto', padding: '32px 24px' }}>
 
-        {/* ── Titre page ──────────────────────────────────────────────── */}
+        {/* Header */}
         <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-end', gap: 16 }}>
           <div>
-            <div style={{ fontSize: 11, fontWeight: 800, color: C.yellowDark, letterSpacing: 1, marginBottom: 4 }}>
+            <div style={{ fontSize: 11, fontWeight: 800, color: C.brand, letterSpacing: 1.5, marginBottom: 4 }}>
               MANAGEMENT
             </div>
-            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 800, color: C.black, letterSpacing: '-0.5px' }}>
-              Gestion des tournées
+            <h1 style={{ margin: 0, fontSize: 26, fontWeight: 900, color: C.dark, letterSpacing: '-0.5px' }}>
+              Gestion des tournees
             </h1>
           </div>
           <div style={{
-            marginLeft: 'auto', background: C.yellowBg, border: `1px solid ${C.yellowLight}`,
+            marginLeft: 'auto',
+            background: '#FFF4EF', border: `1px solid #FFD5C2`,
             borderRadius: 10, padding: '6px 14px',
-            fontSize: 12, fontWeight: 700, color: C.yellowDark,
+            fontSize: 12, fontWeight: 700, color: C.brand,
           }}>
-            {orders.length} tournée{orders.length !== 1 ? 's' : ''}
+            {orders.length} tournee{orders.length !== 1 ? 's' : ''}
           </div>
         </div>
 
-        {/* ── Formulaire nouvelle tournée ──────────────────────────────── */}
+        {/* New order form */}
         <div style={{
-          background: C.white, borderRadius: 18,
-          border: `1px solid ${C.border}`,
+          background: C.card, borderRadius: 18,
+          border: `1.5px solid ${C.border}`,
           padding: 24, marginBottom: 20,
-          boxShadow: '0 2px 12px rgba(26,26,24,0.04)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 10,
-              background: C.yellow, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', fontSize: 16,
-            }}>📦</div>
+              width: 36, height: 36, borderRadius: 11,
+              background: C.brand, display: 'flex', alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <div style={{ width: 14, height: 14, borderRadius: 3, background: 'rgba(255,255,255,0.9)' }} />
+            </div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: C.black }}>Nouvelle tournée</div>
-              <div style={{ fontSize: 11, color: C.gray }}>Assigner un livreur à une date</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: C.dark }}>Nouvelle tournee</div>
+              <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 2 }}>Assigner un livreur a une date</div>
             </div>
           </div>
 
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div style={{ flex: 1, minWidth: 200 }}>
-              <label style={labelStyle}>LIVREUR</label>
+              <label style={labelSt}>LIVREUR</label>
               <select
                 value={form.driverId}
                 onChange={e => setForm({ ...form, driverId: e.target.value })}
-                style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}
+                style={{ ...inputSt, cursor: 'pointer', appearance: 'none' }}
               >
-                <option value="">Choisir un livreur…</option>
+                <option value="">Choisir un livreur...</option>
                 {drivers.map(d => (
                   <option key={d.id} value={d.id}>{d.name} — {d.vehicle}</option>
                 ))}
@@ -182,12 +177,12 @@ export default function OrdersPage() {
             </div>
 
             <div>
-              <label style={labelStyle}>DATE</label>
+              <label style={labelSt}>DATE</label>
               <input
                 type="date"
                 value={form.date}
                 onChange={e => setForm({ ...form, date: e.target.value })}
-                style={{ ...inputStyle, width: 'auto' }}
+                style={{ ...inputSt, width: 'auto' }}
               />
             </div>
 
@@ -195,56 +190,56 @@ export default function OrdersPage() {
               onClick={createOrder}
               disabled={!form.driverId || !form.date || creating}
               style={{
-                background: (!form.driverId || !form.date || creating) ? C.grayLight : C.yellow,
-                color:      (!form.driverId || !form.date || creating) ? C.gray : C.black,
-                border: 'none', borderRadius: 10, padding: '10px 20px',
-                fontSize: 13, fontWeight: 800, cursor: creating ? 'not-allowed' : 'pointer',
-                transition: 'all .15s', whiteSpace: 'nowrap',
-                boxShadow: (!form.driverId || !form.date || creating) ? 'none' : `0 4px 16px rgba(245,158,11,0.3)`,
+                background: (!form.driverId || !form.date || creating) ? C.border : C.brand,
+                color:      (!form.driverId || !form.date || creating) ? C.textSecondary : '#fff',
+                border: 'none', borderRadius: 11, padding: '11px 22px',
+                fontSize: 13, fontWeight: 800,
+                cursor: creating ? 'not-allowed' : 'pointer',
+                whiteSpace: 'nowrap', transition: 'all .15s',
               }}
             >
-              {creating ? 'Création…' : '+ Créer la tournée'}
+              {creating ? 'Creation...' : '+ Creer la tournee'}
             </button>
           </div>
 
           {drivers.length === 0 && (
             <div style={{
-              marginTop: 14, fontSize: 12, color: C.yellowDark,
-              background: C.yellowBg, border: `1px solid ${C.yellowLight}`,
-              borderRadius: 8, padding: '8px 12px',
+              marginTop: 14, fontSize: 12, color: C.brand,
+              background: '#FFF4EF', border: `1px solid #FFD5C2`,
+              borderRadius: 9, padding: '9px 13px',
             }}>
-              ⚠️ Aucun livreur trouvé — créez d'abord un compte livreur dans la section Équipe
+              Aucun livreur trouve — creez d'abord un compte livreur dans la section Equipe
             </div>
           )}
         </div>
 
-        {/* ── Table des tournées ───────────────────────────────────────── */}
+        {/* Orders table */}
         <div style={{
-          background: C.white, borderRadius: 18,
-          border: `1px solid ${C.border}`,
+          background: C.card, borderRadius: 18,
+          border: `1.5px solid ${C.border}`,
           overflow: 'hidden',
-          boxShadow: '0 2px 12px rgba(26,26,24,0.04)',
         }}>
           {loading ? (
-            <div style={{ padding: 40 }}><LoadingSpinner /></div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 60 }}>
+              <div style={{ width: 22, height: 22, border: `3px solid ${C.border}`, borderTopColor: C.brand, borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <span style={{ color: C.textSecondary, fontSize: 14 }}>Chargement...</span>
+            </div>
           ) : orders.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px 20px', color: C.gray }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>📭</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: C.black, marginBottom: 6 }}>
-                Aucune tournée créée
-              </div>
+            <div style={{ textAlign: 'center', padding: '60px 20px', color: C.textSecondary }}>
+              <div style={{ width: 64, height: 64, borderRadius: 32, background: C.border, margin: '0 auto 16px' }} />
+              <div style={{ fontSize: 15, fontWeight: 700, color: C.dark, marginBottom: 6 }}>Aucune tournee creee</div>
               <div style={{ fontSize: 13 }}>Utilisez le formulaire ci-dessus pour commencer</div>
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ background: C.black }}>
-                  {['Date', 'Livreur', 'Véhicule', 'Points', 'Statut', 'Actions'].map(h => (
+                <tr style={{ background: C.dark }}>
+                  {['Date', 'Livreur', 'Vehicule', 'Points', 'Statut', 'Actions'].map(h => (
                     <th key={h} style={{
-                      padding: '12px 20px', textAlign: 'left',
-                      fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)',
-                      letterSpacing: 1,
-                    }}>{h.toUpperCase()}</th>
+                      padding: '13px 20px', textAlign: 'left',
+                      fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.4)',
+                      letterSpacing: 1.2, textTransform: 'uppercase',
+                    }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -252,29 +247,30 @@ export default function OrdersPage() {
                 {orders.map((o, idx) => (
                   <React.Fragment key={o.id}>
                     <tr style={{
-                      background: selected === o.id ? C.yellowBg : idx % 2 === 0 ? C.white : C.bg,
+                      background: selected === o.id ? '#FFF4EF' : idx % 2 === 0 ? C.card : C.bg,
                       borderBottom: `1px solid ${C.border}`,
                       transition: 'background .1s',
                     }}>
-                      <td style={{ padding: '14px 20px', fontWeight: 700, color: C.black }}>{o.date}</td>
+                      <td style={{ padding: '14px 20px', fontWeight: 700, color: C.dark }}>{o.date}</td>
                       <td style={{ padding: '14px 20px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
                           <div style={{
                             width: 30, height: 30, borderRadius: '50%',
-                            background: C.black, color: C.yellow,
+                            background: '#FFF4EF', border: `2px solid ${C.brand}`,
+                            color: C.brand,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: 11, fontWeight: 800, flexShrink: 0,
                           }}>
                             {(o.Driver?.name || '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}
                           </div>
-                          <span style={{ color: C.black, fontWeight: 600 }}>{o.Driver?.name || '—'}</span>
+                          <span style={{ color: C.dark, fontWeight: 600 }}>{o.Driver?.name || '—'}</span>
                         </div>
                       </td>
-                      <td style={{ padding: '14px 20px', color: C.gray }}>{o.Driver?.vehicle || '—'}</td>
+                      <td style={{ padding: '14px 20px', color: C.textSecondary }}>{o.Driver?.vehicle || '—'}</td>
                       <td style={{ padding: '14px 20px' }}>
                         <span style={{
-                          background: C.yellowBg, color: C.yellowDark,
-                          border: `1px solid ${C.yellowLight}`,
+                          background: '#FFF4EF', color: C.brand,
+                          border: `1px solid #FFD5C2`,
                           borderRadius: 8, padding: '3px 10px',
                           fontSize: 12, fontWeight: 700,
                         }}>
@@ -286,31 +282,31 @@ export default function OrdersPage() {
                         <button
                           onClick={() => viewPoints(o.id)}
                           style={{
-                            background: selected === o.id ? C.yellow : 'transparent',
-                            color:      selected === o.id ? C.black : C.yellowDark,
-                            border:     `1px solid ${selected === o.id ? C.yellow : C.yellowLight}`,
-                            borderRadius: 8, padding: '5px 12px',
+                            background: selected === o.id ? C.brand : 'transparent',
+                            color:      selected === o.id ? '#fff' : C.brand,
+                            border: `1.5px solid ${selected === o.id ? C.brand : '#FFD5C2'}`,
+                            borderRadius: 9, padding: '6px 14px',
                             fontSize: 11, fontWeight: 700, cursor: 'pointer',
                             transition: 'all .15s',
                           }}
                         >
-                          {selected === o.id ? '▲ Masquer' : '▼ Voir points'}
+                          {selected === o.id ? 'Masquer' : 'Voir points'}
                         </button>
                       </td>
                     </tr>
 
-                    {/* ── Panneau points ───────────────────────────────── */}
+                    {/* Points panel */}
                     {selected === o.id && (
                       <tr>
-                        <td colSpan={6} style={{ padding: '20px 24px', background: C.yellowBg, borderBottom: `1px solid ${C.border}` }}>
+                        <td colSpan={6} style={{ padding: '20px 24px', background: '#FFF4EF', borderBottom: `1px solid ${C.border}` }}>
 
-                          {/* Liste points existants */}
+                          {/* Points list */}
                           {points.length === 0 ? (
                             <div style={{
-                              textAlign: 'center', padding: '16px', marginBottom: 16,
-                              color: C.gray, fontSize: 13,
-                              background: C.white, borderRadius: 12,
-                              border: `1px dashed ${C.border}`,
+                              textAlign: 'center', padding: 16, marginBottom: 16,
+                              color: C.textSecondary, fontSize: 13,
+                              background: C.card, borderRadius: 12,
+                              border: `1.5px dashed ${C.border}`,
                             }}>
                               Aucun point — ajoutez-en ci-dessous
                             </div>
@@ -324,52 +320,44 @@ export default function OrdersPage() {
                                 return (
                                   <div key={p.id} style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    background: C.white, borderRadius: 14,
-                                    padding: '12px 16px',
-                                    border: `1px solid ${C.border}`,
-                                    boxShadow: '0 1px 4px rgba(26,26,24,0.04)',
+                                    background: C.card, borderRadius: 14,
+                                    padding: '13px 16px',
+                                    border: `1.5px solid ${C.border}`,
                                   }}>
                                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
                                       <div style={{
-                                        width: 30, height: 30, borderRadius: 8,
-                                        background: C.black, color: C.yellow,
+                                        width: 30, height: 30, borderRadius: 9,
+                                        background: C.brand, color: '#fff',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         fontSize: 12, fontWeight: 800, flexShrink: 0,
                                       }}>
                                         {p.sequence}
                                       </div>
                                       <div>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.black }}>
-                                          {p.clientName}
-                                        </div>
-                                        <div style={{ fontSize: 11, color: C.gray, marginTop: 2 }}>
-                                          {p.address}
-                                        </div>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.dark }}>{p.clientName}</div>
+                                        <div style={{ fontSize: 11, color: C.textSecondary, marginTop: 2 }}>{p.address}</div>
                                         {items.length > 0 && (
-                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 6 }}>
+                                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 7 }}>
                                             {items.map((item, i) => (
                                               <span key={i} style={{
-                                                fontSize: 10, background: C.yellowBg,
-                                                color: C.yellowDark, borderRadius: 20,
-                                                padding: '2px 8px', fontWeight: 600,
-                                                border: `1px solid ${C.yellowLight}`,
+                                                fontSize: 10, background: '#FFF4EF',
+                                                color: C.brand, borderRadius: 20,
+                                                padding: '2px 9px', fontWeight: 700,
+                                                border: `1px solid #FFD5C2`,
                                               }}>
-                                                {item.name} ×{item.qty}
+                                                {item.name} x{item.qty}
                                               </span>
                                             ))}
                                             {p.totalPrice && (
-                                              <span style={{
-                                                fontSize: 11, fontWeight: 800,
-                                                color: C.yellowDark, marginLeft: 4,
-                                              }}>
+                                              <span style={{ fontSize: 11, fontWeight: 800, color: C.brand, marginLeft: 4 }}>
                                                 {p.totalPrice} MAD
                                               </span>
                                             )}
                                           </div>
                                         )}
                                         {p.failureNote && (
-                                          <div style={{ fontSize: 11, color: C.red, marginTop: 4 }}>
-                                            ⚠️ {p.failureNote}
+                                          <div style={{ fontSize: 11, color: C.red, marginTop: 5, fontWeight: 600 }}>
+                                            {p.failureNote}
                                           </div>
                                         )}
                                       </div>
@@ -381,11 +369,9 @@ export default function OrdersPage() {
                             </div>
                           )}
 
-                          {/* Barre actions */}
+                          {/* Action bar */}
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-                            <span style={{
-                              fontSize: 10, fontWeight: 800, color: C.yellowDark, letterSpacing: 1,
-                            }}>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: C.brand, letterSpacing: 1.2 }}>
                               {points.length} POINT{points.length !== 1 ? 'S' : ''} DE PASSAGE
                             </span>
                             <button
@@ -395,142 +381,106 @@ export default function OrdersPage() {
                                 setPointForm({ clientName: '', address: '', phone: '', note: '' })
                               }}
                               style={{
-                                background: showAddPoint ? C.white : C.yellow,
-                                color:      showAddPoint ? C.gray : C.black,
-                                border:     `1px solid ${showAddPoint ? C.border : C.yellow}`,
-                                borderRadius: 10, padding: '7px 14px',
+                                background: showAddPoint ? C.card : C.brand,
+                                color:      showAddPoint ? C.textSecondary : '#fff',
+                                border: `1.5px solid ${showAddPoint ? C.border : C.brand}`,
+                                borderRadius: 10, padding: '8px 16px',
                                 fontSize: 12, fontWeight: 700, cursor: 'pointer',
                                 transition: 'all .15s',
-                                boxShadow: showAddPoint ? 'none' : `0 4px 12px rgba(245,158,11,0.25)`,
                               }}
                             >
-                              {showAddPoint ? '✕ Annuler' : '+ Ajouter un point'}
+                              {showAddPoint ? 'Annuler' : '+ Ajouter un point'}
                             </button>
                           </div>
 
-                          {/* Formulaire ajout point */}
+                          {/* Add point form */}
                           {showAddPoint && (
                             <form onSubmit={handleAddPoint} style={{
-                              background: C.white, borderRadius: 14,
-                              border: `1px solid ${C.border}`,
+                              background: C.card, borderRadius: 14,
+                              border: `1.5px solid ${C.border}`,
                               padding: 20,
-                              boxShadow: '0 4px 20px rgba(26,26,24,0.08)',
                             }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
                                 <div style={{
                                   width: 28, height: 28, borderRadius: 8,
-                                  background: C.yellow, display: 'flex',
+                                  background: C.brand, display: 'flex',
                                   alignItems: 'center', justifyContent: 'center',
-                                  fontSize: 14,
-                                }}>📍</div>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: C.black }}>
+                                }}>
+                                  <div style={{ width: 10, height: 10, borderRadius: 5, background: 'rgba(255,255,255,0.9)' }} />
+                                </div>
+                                <div style={{ fontSize: 13, fontWeight: 800, color: C.dark }}>
                                   Nouveau point de livraison — n°{points.length + 1}
                                 </div>
                               </div>
 
                               {pointError && (
-                                <div style={{
-                                  background: C.redBg, border: `1px solid #FECACA`,
-                                  color: C.red, fontSize: 12, borderRadius: 8,
-                                  padding: '8px 12px', marginBottom: 12,
-                                }}>
+                                <div style={{ background: '#FEF2F2', border: `1px solid #FECACA`, color: C.red, fontSize: 12, borderRadius: 9, padding: '9px 13px', marginBottom: 14, fontWeight: 600 }}>
                                   {pointError}
                                 </div>
                               )}
                               {pointSuccess && (
-                                <div style={{
-                                  background: C.greenBg, border: `1px solid #BBF7D0`,
-                                  color: C.green, fontSize: 12, borderRadius: 8,
-                                  padding: '8px 12px', marginBottom: 12,
-                                }}>
+                                <div style={{ background: '#E8FBF0', border: `1px solid #B3EED0`, color: C.green, fontSize: 12, borderRadius: 9, padding: '9px 13px', marginBottom: 14, fontWeight: 600 }}>
                                   {pointSuccess}
                                 </div>
                               )}
 
                               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
                                 <div>
-                                  <label style={labelStyle}>NOM DU CLIENT *</label>
-                                  <input
-                                    type="text"
-                                    value={pointForm.clientName}
+                                  <label style={labelSt}>NOM DU CLIENT *</label>
+                                  <input type="text" value={pointForm.clientName}
                                     onChange={e => setPointForm({ ...pointForm, clientName: e.target.value })}
-                                    placeholder="Ex: Ahmed Benali"
-                                    required
-                                    style={inputStyle}
+                                    placeholder="Ex: Ahmed Benali" required style={inputSt}
+                                    onFocus={e => e.target.style.borderColor = C.brand}
+                                    onBlur={e => e.target.style.borderColor = C.border}
                                   />
                                 </div>
                                 <div>
-                                  <label style={labelStyle}>TÉLÉPHONE</label>
-                                  <input
-                                    type="tel"
-                                    value={pointForm.phone}
+                                  <label style={labelSt}>TELEPHONE</label>
+                                  <input type="tel" value={pointForm.phone}
                                     onChange={e => setPointForm({ ...pointForm, phone: e.target.value })}
-                                    placeholder="Ex: 0612345678"
-                                    style={inputStyle}
+                                    placeholder="Ex: 0612345678" style={inputSt}
+                                    onFocus={e => e.target.style.borderColor = C.brand}
+                                    onBlur={e => e.target.style.borderColor = C.border}
                                   />
                                 </div>
                               </div>
 
                               <div style={{ marginBottom: 12 }}>
-                                <label style={labelStyle}>ADRESSE DE LIVRAISON *</label>
-                                <input
-                                  type="text"
-                                  value={pointForm.address}
+                                <label style={labelSt}>ADRESSE DE LIVRAISON *</label>
+                                <input type="text" value={pointForm.address}
                                   onChange={e => setPointForm({ ...pointForm, address: e.target.value })}
-                                  placeholder="Ex: 12 Rue Mohammed V, Marrakech"
-                                  required
-                                  style={inputStyle}
+                                  placeholder="Ex: 12 Rue Mohammed V, Marrakech" required style={inputSt}
+                                  onFocus={e => e.target.style.borderColor = C.brand}
+                                  onBlur={e => e.target.style.borderColor = C.border}
                                 />
                               </div>
 
-                              <div style={{ marginBottom: 16 }}>
-                                <label style={labelStyle}>INSTRUCTIONS (OPTIONNEL)</label>
-                                <input
-                                  type="text"
-                                  value={pointForm.note}
+                              <div style={{ marginBottom: 18 }}>
+                                <label style={labelSt}>INSTRUCTIONS (OPTIONNEL)</label>
+                                <input type="text" value={pointForm.note}
                                   onChange={e => setPointForm({ ...pointForm, note: e.target.value })}
-                                  placeholder="Ex: Sonnez au portail, 2ème étage…"
-                                  style={inputStyle}
+                                  placeholder="Ex: Sonnez au portail, 2eme etage..." style={inputSt}
+                                  onFocus={e => e.target.style.borderColor = C.brand}
+                                  onBlur={e => e.target.style.borderColor = C.border}
                                 />
                               </div>
 
                               <div style={{ display: 'flex', gap: 10 }}>
-                                <button
-                                  type="submit"
-                                  disabled={addingPoint}
-                                  style={{
-                                    flex: 1, background: addingPoint ? C.grayLight : C.yellow,
-                                    color: addingPoint ? C.gray : C.black,
-                                    border: 'none', borderRadius: 10, padding: '11px 0',
-                                    fontSize: 13, fontWeight: 800,
-                                    cursor: addingPoint ? 'not-allowed' : 'pointer',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                    boxShadow: addingPoint ? 'none' : `0 4px 14px rgba(245,158,11,0.3)`,
-                                    transition: 'all .15s',
-                                  }}
-                                >
-                                  {addingPoint ? (
-                                    <>
-                                      <div style={{
-                                        width: 14, height: 14,
-                                        border: `2px solid ${C.gray}`,
-                                        borderTopColor: 'transparent',
-                                        borderRadius: '50%',
-                                        animation: 'spin 0.7s linear infinite',
-                                      }} />
-                                      Ajout en cours…
-                                    </>
-                                  ) : `✓ Ajouter le point n°${points.length + 1}`}
+                                <button type="submit" disabled={addingPoint} style={{
+                                  background: addingPoint ? C.border : C.brand,
+                                  color: addingPoint ? C.textSecondary : '#fff',
+                                  border: 'none', borderRadius: 11,
+                                  padding: '11px 22px', fontSize: 13, fontWeight: 800,
+                                  cursor: addingPoint ? 'not-allowed' : 'pointer',
+                                }}>
+                                  {addingPoint ? 'Ajout...' : 'Ajouter le point'}
                                 </button>
-                                <button
-                                  type="button"
-                                  onClick={() => { setShowAddPoint(false); setPointError('') }}
+                                <button type="button"
+                                  onClick={() => { setShowAddPoint(false); setPointError(''); setPointSuccess('') }}
                                   style={{
-                                    padding: '11px 18px',
-                                    background: C.white,
-                                    border: `1px solid ${C.border}`,
-                                    borderRadius: 10, color: C.gray,
-                                    fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                                    background: 'transparent', color: C.textSecondary,
+                                    border: `1.5px solid ${C.border}`, borderRadius: 11,
+                                    padding: '11px 18px', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                                   }}
                                 >
                                   Annuler
@@ -549,11 +499,7 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg) } }
-        input:focus, select:focus { outline: 2px solid ${C.yellow}; outline-offset: -1px; }
-        tr:hover td { background: ${C.yellowBg} !important; transition: background .1s; }
-      `}</style>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   )
 }

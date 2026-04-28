@@ -10,31 +10,45 @@ import api from '../api/api'
 import useAuthStore from '../store/authStore'
 import StatusBadge from '../components/StatusBadge'
 
+// ─── Palette ──────────────────────────────────────────────────────────────────
+const C = {
+  brand:    '#FF6B35',
+  dark:     '#1A1A2E',
+  bg:       '#F7F8FA',
+  card:     '#FFFFFF',
+  border:   '#EDEEF2',
+  textPrimary:   '#1A1A2E',
+  textSecondary: '#8A8FA8',
+  textMuted:     '#B5B9CC',
+  green:    '#00B14F',
+  red:      '#EF4444',
+}
+
 // ─── Données catalogue ────────────────────────────────────────────────────────
 const STEPS = [
-  { key: 'pending',     label: 'Confirmée', icon: '📋' },
-  { key: 'in_progress', label: 'En route',  icon: '🚴' },
-  { key: 'delivered',   label: 'Livrée',    icon: '✅' },
+  { key: 'pending',     label: 'Confirmee' },
+  { key: 'in_progress', label: 'En route'  },
+  { key: 'delivered',   label: 'Livree'    },
 ]
 
 const STATUS_INFO = {
-  pending:     { msg: 'Commande confirmée. Un livreur va prendre en charge votre colis.' },
-  in_progress: { msg: 'Votre livreur est en route ! Suivez-le sur la carte ci-dessous.' },
-  delivered:   { msg: 'Livraison effectuée avec succès. Merci de votre confiance !' },
-  failed:      { msg: 'La livraison a échoué ou a été annulée.' },
+  pending:     { msg: 'Commande confirmee. Un livreur va prendre en charge votre colis.' },
+  in_progress: { msg: 'Votre livreur est en route. Suivez-le sur la carte ci-dessous.' },
+  delivered:   { msg: 'Livraison effectuee avec succes. Merci de votre confiance !' },
+  failed:      { msg: 'La livraison a echoue ou a ete annulee.' },
 }
 
 const CATEGORIES = [
   {
-    id: 'cafe', label: 'Café', subtitle: 'Boissons chaudes & froides', accent: '#6F4E37',
+    id: 'cafe', label: 'Cafe', subtitle: 'Boissons chaudes & froides', accent: '#6F4E37',
     photo: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&h=400&fit=crop',
     items: [
-      { id: 'c1', name: 'Café Marocain',     description: 'Cardamome & cannelle',         price: 8,  photo: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&h=300&fit=crop' },
-      { id: 'c2', name: 'Cappuccino',         description: 'Mousse de lait veloutée',      price: 15, photo: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&h=300&fit=crop' },
-      { id: 'c3', name: "Jus d'orange frais", description: 'Pressé minute, 100% naturel', price: 12, photo: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop' },
-      { id: 'c4', name: 'Thé à la menthe',    description: 'Gunpowder & menthe fraîche',  price: 10, photo: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
+      { id: 'c1', name: 'Cafe Marocain',     description: 'Cardamome & cannelle',         price: 8,  photo: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=400&h=300&fit=crop' },
+      { id: 'c2', name: 'Cappuccino',         description: 'Mousse de lait veloutee',      price: 15, photo: 'https://images.unsplash.com/photo-1572442388796-11668a67e53d?w=400&h=300&fit=crop' },
+      { id: 'c3', name: "Jus d'orange frais", description: 'Presse minute, 100% naturel', price: 12, photo: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?w=400&h=300&fit=crop' },
+      { id: 'c4', name: 'The a la menthe',    description: 'Gunpowder & menthe fraiche',  price: 10, photo: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=400&h=300&fit=crop' },
       { id: 'c5', name: 'Smoothie fruits',    description: 'Fraise, banane & mangue',     price: 18, photo: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?w=400&h=300&fit=crop' },
-      { id: 'c6', name: 'Café Glacé',         description: 'Double espresso sur glace',   price: 20, photo: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop' },
+      { id: 'c6', name: 'Cafe Glace',         description: 'Double espresso sur glace',   price: 20, photo: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=400&h=300&fit=crop' },
     ],
   },
   {
@@ -42,35 +56,35 @@ const CATEGORIES = [
     photo: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=400&fit=crop',
     items: [
       { id: 'r1', name: 'Pizza Margherita', description: 'Tomate, mozzarella, basilic', price: 55, photo: 'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=400&h=300&fit=crop' },
-      { id: 'r2', name: 'Couscous royal',   description: 'Agneau, merguez, légumes',   price: 70, photo: 'https://images.unsplash.com/photo-1628294896516-3c88dc6b07af?w=400&h=300&fit=crop' },
+      { id: 'r2', name: 'Couscous royal',   description: 'Agneau, merguez, legumes',   price: 70, photo: 'https://images.unsplash.com/photo-1628294896516-3c88dc6b07af?w=400&h=300&fit=crop' },
       { id: 'r3', name: 'Tajine poulet',    description: 'Citron confit & olives',     price: 65, photo: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=400&h=300&fit=crop' },
-      { id: 'r4', name: 'Burger classique', description: 'Steak haché, cheddar',       price: 50, photo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop' },
-      { id: 'r5', name: 'Pastilla poulet',  description: 'Feuilleté sucré-salé',       price: 45, photo: 'https://images.unsplash.com/photo-1621501103258-9253c3a5e358?w=400&h=300&fit=crop' },
-      { id: 'r6', name: 'Salade niçoise',   description: 'Thon, œuf, olives',          price: 35, photo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop' },
+      { id: 'r4', name: 'Burger classique', description: 'Steak hache, cheddar',       price: 50, photo: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=300&fit=crop' },
+      { id: 'r5', name: 'Pastilla poulet',  description: 'Feuillte sucre-sale',        price: 45, photo: 'https://images.unsplash.com/photo-1621501103258-9253c3a5e358?w=400&h=300&fit=crop' },
+      { id: 'r6', name: 'Salade nicoise',   description: 'Thon, oeuf, olives',         price: 35, photo: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop' },
     ],
   },
   {
     id: 'shop', label: 'Shopping', subtitle: 'Colis, courses & cadeaux', accent: '#1A5276',
     photo: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&h=400&fit=crop',
     items: [
-      { id: 's1', name: 'Colis standard',      description: "Jusqu'à 5 kg",          price: 15, photo: 'https://images.unsplash.com/photo-1595079676601-f1adf5be5dee?w=400&h=300&fit=crop' },
+      { id: 's1', name: 'Colis standard',      description: "Jusqu'a 5 kg",          price: 15, photo: 'https://images.unsplash.com/photo-1595079676601-f1adf5be5dee?w=400&h=300&fit=crop' },
       { id: 's2', name: 'Colis express',        description: 'Livraison en < 1h',     price: 30, photo: 'https://images.unsplash.com/photo-1566576721346-d4a3b4eaeb55?w=400&h=300&fit=crop' },
       { id: 's3', name: 'Documents',            description: 'Enveloppes, contrats',  price: 10, photo: 'https://images.unsplash.com/photo-1568667256549-094345857637?w=400&h=300&fit=crop' },
-      { id: 's4', name: 'Courses alimentaires', description: 'Supermarché, épicerie', price: 20, photo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop' },
+      { id: 's4', name: 'Courses alimentaires', description: 'Supermarche, epicerie', price: 20, photo: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=400&h=300&fit=crop' },
       { id: 's5', name: 'Fleurs & Cadeaux',     description: 'Bouquets, coffrets',    price: 25, photo: 'https://images.unsplash.com/photo-1487530811015-780f2f08b77a?w=400&h=300&fit=crop' },
-      { id: 's6', name: 'Électronique',         description: 'Fragile, assuré',       price: 35, photo: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&h=300&fit=crop' },
+      { id: 's6', name: 'Electronique',         description: 'Fragile, assure',       price: 35, photo: 'https://images.unsplash.com/photo-1468495244123-6c6c332eeece?w=400&h=300&fit=crop' },
     ],
   },
   {
-    id: 'pharma', label: 'Pharmacie', subtitle: 'Médicaments & soins', accent: '#1D6A3A',
+    id: 'pharma', label: 'Pharmacie', subtitle: 'Medicaments & soins', accent: '#1D6A3A',
     photo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=400&fit=crop',
     items: [
-      { id: 'p1', name: 'Médicaments ordonnance',  description: 'Sur ordonnance valide',    price: 12, photo: 'https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=400&h=300&fit=crop' },
-      { id: 'p2', name: 'Paracétamol 500mg',       description: 'Boîte de 20 comprimés',   price: 8,  photo: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=400&h=300&fit=crop' },
-      { id: 'p3', name: 'Crème solaire SPF50+',    description: '150ml, résistant eau',    price: 45, photo: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop' },
-      { id: 'p4', name: 'Vitamines & compléments', description: 'Vit C, D, magnésium',    price: 35, photo: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=400&h=300&fit=crop' },
-      { id: 'p5', name: 'Masques FFP2',            description: 'Boîte de 10',             price: 15, photo: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&h=300&fit=crop' },
-      { id: 'p6', name: 'Thermomètre digital',     description: 'Résultat en 10 secondes', price: 60, photo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop' },
+      { id: 'p1', name: 'Medicaments ordonnance',  description: 'Sur ordonnance valide',    price: 12, photo: 'https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=400&h=300&fit=crop' },
+      { id: 'p2', name: 'Paracetamol 500mg',       description: 'Boite de 20 comprimes',   price: 8,  photo: 'https://images.unsplash.com/photo-1603398938378-e54eab446dde?w=400&h=300&fit=crop' },
+      { id: 'p3', name: 'Creme solaire SPF50+',    description: '150ml, resistant eau',    price: 45, photo: 'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400&h=300&fit=crop' },
+      { id: 'p4', name: 'Vitamines & complements', description: 'Vit C, D, magnesium',    price: 35, photo: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?w=400&h=300&fit=crop' },
+      { id: 'p5', name: 'Masques FFP2',            description: 'Boite de 10',             price: 15, photo: 'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=400&h=300&fit=crop' },
+      { id: 'p6', name: 'Thermometre digital',     description: 'Resultat en 10 secondes', price: 60, photo: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop' },
     ],
   },
 ]
@@ -84,7 +98,7 @@ function RatingModal({ pointId, driverName, onClose, onSubmit }) {
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
-  const labels = { 1: 'Très mauvais', 2: 'Mauvais', 3: 'Correct', 4: 'Bien', 5: 'Excellent !' }
+  const labels = { 1: 'Tres mauvais', 2: 'Mauvais', 3: 'Correct', 4: 'Bien', 5: 'Excellent !' }
 
   const handleSubmit = async () => {
     if (!rating) { setError('Veuillez choisir une note'); return }
@@ -101,53 +115,37 @@ function RatingModal({ pointId, driverName, onClose, onSubmit }) {
   return (
     <View style={rStyles.overlay}>
       <View style={rStyles.modal}>
-        {/* En-tête */}
+        <View style={rStyles.modalHandle} />
         <View style={rStyles.modalHeader}>
-          <Text style={rStyles.modalTitle}>Évaluer la livraison</Text>
+          <Text style={rStyles.modalTitle}>Evaluer la livraison</Text>
           <Text style={rStyles.modalSub}>
-            Comment s'est passée votre livraison avec {driverName} ?
+            Comment s'est passee votre livraison avec {driverName} ?
           </Text>
         </View>
 
-        {/* Corps */}
         <View style={rStyles.modalBody}>
-          {/* Étoiles */}
           <View style={rStyles.starsRow}>
             {[1, 2, 3, 4, 5].map(star => (
-              <TouchableOpacity
-                key={star}
-                onPress={() => setRating(star)}
-                style={rStyles.starBtn}
-                activeOpacity={0.7}
-              >
-                <Text style={[rStyles.starText, { color: star <= rating ? '#F59E0B' : '#E5E7EB' }]}>
-                  ★
-                </Text>
+              <TouchableOpacity key={star} onPress={() => setRating(star)} style={rStyles.starBtn} activeOpacity={0.7}>
+                <Text style={[rStyles.starText, { color: star <= rating ? '#F59E0B' : C.border }]}>★</Text>
               </TouchableOpacity>
             ))}
           </View>
+          {rating > 0 && <Text style={rStyles.ratingLabel}>{labels[rating]}</Text>}
 
-          {/* Label note */}
-          {rating > 0 && (
-            <Text style={rStyles.ratingLabel}>{labels[rating]}</Text>
-          )}
-
-          {/* Commentaire */}
           <TextInput
             style={rStyles.commentInput}
             value={comment}
             onChangeText={setComment}
-            placeholder="Laissez un commentaire (optionnel)…"
-            placeholderTextColor="#9CA3AF"
+            placeholder="Laissez un commentaire (optionnel)..."
+            placeholderTextColor={C.textSecondary}
             multiline
             numberOfLines={3}
             textAlignVertical="top"
           />
 
-          {/* Erreur */}
           {!!error && <Text style={rStyles.errorText}>{error}</Text>}
 
-          {/* Boutons */}
           <View style={rStyles.modalBtns}>
             <TouchableOpacity style={rStyles.cancelBtn} onPress={onClose}>
               <Text style={rStyles.cancelBtnText}>Plus tard</Text>
@@ -169,11 +167,20 @@ function RatingModal({ pointId, driverName, onClose, onSubmit }) {
   )
 }
 
+// ─── Sous-composant info row ──────────────────────────────────────────────────
+function InfoRowDetail({ label, value }) {
+  return (
+    <View style={styles.infoRowD}>
+      <Text style={styles.infoLabelD}>{label}</Text>
+      <Text style={styles.infoValueD}>{value}</Text>
+    </View>
+  )
+}
+
 // ─── Composant principal ──────────────────────────────────────────────────────
 export default function ClientTrackingScreen({ navigation }) {
   const { user } = useAuthStore()
 
-  // Navigation interne
   const [view,       setView]       = useState('list')
   const [orders,     setOrders]     = useState([])
   const [loading,    setLoading]    = useState(true)
@@ -181,7 +188,6 @@ export default function ClientTrackingScreen({ navigation }) {
   const [selected,   setSelected]   = useState(null)
   const [driverPos,  setDriverPos]  = useState(null)
 
-  // Flow commande
   const [step,       setStep]       = useState(0)
   const [activeCat,  setActiveCat]  = useState(null)
   const [activeItem, setActiveItem] = useState(null)
@@ -192,13 +198,12 @@ export default function ClientTrackingScreen({ navigation }) {
   const [error,      setError]      = useState('')
   const [success,    setSuccess]    = useState('')
 
-  // Rating
   const [ratingModal, setRatingModal] = useState(null)
 
   const posInterval = useRef(null)
   const autoRefresh = useRef(null)
 
-  // ── Panier ──
+  // Panier
   const cartItems = Object.entries(cart)
     .filter(([, q]) => q > 0)
     .map(([id, qty]) => ({ ...ALL_ITEMS.find(i => i.id === id), qty }))
@@ -213,31 +218,24 @@ export default function ClientTrackingScreen({ navigation }) {
     return n
   })
 
-  // ── Déconnexion ──
   const handleLogout = async () => {
-    Alert.alert(
-      'Déconnexion',
-      'Voulez-vous vraiment vous déconnecter ?',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        {
-          text: 'Déconnecter',
-          style: 'destructive',
-          onPress: async () => {
-            await AsyncStorage.multiRemove(['token', 'user', 'role'])
-            navigation.replace('Login')
-          },
+    Alert.alert('Deconnexion', 'Voulez-vous vraiment vous deconnecter ?', [
+      { text: 'Annuler', style: 'cancel' },
+      {
+        text: 'Deconnecter', style: 'destructive',
+        onPress: async () => {
+          await AsyncStorage.multiRemove(['token', 'user', 'role'])
+          navigation.replace('Login')
         },
-      ]
-    )
+      },
+    ])
   }
 
-  // ── Vérification connexion ──
   useEffect(() => {
     const checkAuth = async () => {
       const token = await AsyncStorage.getItem('token')
       if (!token) {
-        Alert.alert('Session expirée', 'Veuillez vous reconnecter', [
+        Alert.alert('Session expiree', 'Veuillez vous reconnecter', [
           { text: 'OK', onPress: () => navigation.replace('Login') },
         ])
         return
@@ -247,7 +245,6 @@ export default function ClientTrackingScreen({ navigation }) {
     checkAuth()
   }, [])
 
-  // ── Charger commandes ──
   const loadOrders = useCallback(async (silent = false) => {
     if (!silent) setLoading(true)
     try {
@@ -259,7 +256,6 @@ export default function ClientTrackingScreen({ navigation }) {
         navigation.replace('Login')
         return
       }
-      console.error('Erreur chargement commandes:', err)
       setOrders([])
     } finally {
       setLoading(false)
@@ -272,109 +268,72 @@ export default function ClientTrackingScreen({ navigation }) {
     return () => clearInterval(autoRefresh.current)
   }, [loadOrders])
 
-  // ── Polling position livreur ──
   useEffect(() => {
     clearInterval(posInterval.current)
-    // ✅ Chercher driverAcceptedId directement sur le point (priorité),
-    //    puis fallback sur DeliveryOrder.driverId
     const driverId = selected?.driverAcceptedId
                   || selected?.DeliveryOrder?.driverId
                   || selected?.DeliveryOrder?.Driver?.id
-
     if (selected?.status === 'in_progress' && driverId) {
       const fetchPos = () =>
         api.get(`/tracking/position/${driverId}`)
-          .then(r => {
-            if (r.data?.latitude) {
-              setDriverPos({ latitude: r.data.latitude, longitude: r.data.longitude })
-            }
-          })
+          .then(r => { if (r.data?.latitude) setDriverPos({ latitude: r.data.latitude, longitude: r.data.longitude }) })
           .catch(() => {})
       fetchPos()
-      posInterval.current = setInterval(fetchPos, 5000)  // 5s pour plus de réactivité
+      posInterval.current = setInterval(fetchPos, 5000)
     } else {
       setDriverPos(null)
     }
     return () => clearInterval(posInterval.current)
   }, [selected])
 
-  // ── Reset flow commande ──
   const resetForm = () => {
     setCart({})
     setForm({ address: '', pickupAddress: '', note: '' })
-    setStep(0)
-    setActiveCat(null)
-    setActiveItem(null)
-    setError('')
-    setSuccess('')
+    setStep(0); setActiveCat(null); setActiveItem(null)
+    setError(''); setSuccess('')
   }
 
-  // ── Soumettre commande ──
   const handleSubmit = async () => {
     if (!form.address.trim()) { setError('Adresse de livraison requise'); return }
-
     const token = await AsyncStorage.getItem('token')
-    if (!token) {
-      setError("Vous n'êtes pas connecté. Veuillez vous reconnecter.")
-      setTimeout(() => navigation.replace('Login'), 2000)
-      return
-    }
-
-    setError('')
-    setSubmitting(true)
+    if (!token) { setError("Vous n'etes pas connecte."); setTimeout(() => navigation.replace('Login'), 2000); return }
+    setError(''); setSubmitting(true)
     try {
       const items = cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, photo: i.photo }))
       await api.post('/client/order', {
-        address:        form.address,
-        pickupAddress:  form.pickupAddress,
-        note:           form.note,
-        items,
-        latitude:  31.6295,
-        longitude: -7.9811,
+        address: form.address, pickupAddress: form.pickupAddress,
+        note: form.note, items, latitude: 31.6295, longitude: -7.9811,
       })
-      setSuccess('Commande passée avec succès !')
+      setSuccess('Commande passee avec succes !')
       await loadOrders(true)
       setTimeout(() => { resetForm(); setView('list') }, 1500)
     } catch (err) {
-      console.error('Erreur commande:', err.response?.data)
       setError(err.response?.data?.error || 'Erreur lors de la commande')
-    } finally {
-      setSubmitting(false)
-    }
+    } finally { setSubmitting(false) }
   }
 
-  // ── Annuler commande ──
   const handleCancel = (pointId) => {
-    Alert.alert(
-      'Annuler la commande',
-      'Voulez-vous vraiment annuler cette commande ?',
-      [
-        { text: 'Non', style: 'cancel' },
-        {
-          text: 'Oui, annuler',
-          style: 'destructive',
-          onPress: async () => {
-            setCancelling(true)
-            try {
-              await api.patch(`/client/cancel/${pointId}`)
-              await loadOrders(true)
-              setView('list')
-            } catch (err) {
-              Alert.alert('Erreur', err.response?.data?.error || "Erreur lors de l'annulation")
-            } finally {
-              setCancelling(false)
-            }
-          },
+    Alert.alert('Annuler la commande', 'Voulez-vous vraiment annuler cette commande ?', [
+      { text: 'Non', style: 'cancel' },
+      {
+        text: 'Oui, annuler', style: 'destructive',
+        onPress: async () => {
+          setCancelling(true)
+          try {
+            await api.patch(`/client/cancel/${pointId}`)
+            await loadOrders(true)
+            setView('list')
+          } catch (err) {
+            Alert.alert('Erreur', err.response?.data?.error || "Erreur lors de l'annulation")
+          } finally { setCancelling(false) }
         },
-      ]
-    )
+      },
+    ])
   }
 
-  // ── Noter livraison ──
   const handleRate = async (pointId, rating, comment) => {
     await api.post(`/client/rate/${pointId}`, { rating, comment })
     await loadOrders(true)
-    // Rafraîchir la commande sélectionnée
     setSelected(prev => prev ? { ...prev, rating, ratingComment: comment } : prev)
   }
 
@@ -382,13 +341,12 @@ export default function ClientTrackingScreen({ navigation }) {
   const pastOrders   = orders.filter(o => o.status === 'delivered'  || o.status === 'failed')
   const parseItems   = raw => Array.isArray(raw) ? raw : (typeof raw === 'string' ? JSON.parse(raw || '[]') : [])
 
-  // ══════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
   // VUE COMMANDE
-  // ══════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
   if (view === 'order') {
     const progressPct = ((step + 1) / 4) * 100
 
-    // Fiche détail article
     if (activeItem) {
       const cat = CATEGORIES.find(c => c.items.some(i => i.id === activeItem.id))
       const qty = cart[activeItem.id] || 0
@@ -401,24 +359,24 @@ export default function ClientTrackingScreen({ navigation }) {
           <ScrollView style={styles.detailBody}>
             <View style={styles.detailInfo}>
               <Text style={styles.detailName}>{activeItem.name}</Text>
-              <Text style={[styles.detailPrice, { color: cat?.accent }]}>{activeItem.price} MAD</Text>
+              <Text style={[styles.detailPrice, { color: cat?.accent || C.brand }]}>{activeItem.price} MAD</Text>
             </View>
             <Text style={styles.detailDesc}>{activeItem.description}</Text>
             <View style={styles.qtyRow}>
-              <Text style={styles.qtyLabel}>Quantité</Text>
+              <Text style={styles.qtyLabel}>Quantite</Text>
               <View style={styles.qtyControl}>
                 <TouchableOpacity onPress={() => removeItem(activeItem.id)} style={styles.qtyBtn}>
-                  <Text style={styles.qtyBtnText}>−</Text>
+                  <Text style={styles.qtyBtnText}>-</Text>
                 </TouchableOpacity>
                 <Text style={styles.qtyVal}>{qty}</Text>
-                <TouchableOpacity onPress={() => addItem(activeItem)} style={styles.qtyBtn}>
-                  <Text style={styles.qtyBtnText}>+</Text>
+                <TouchableOpacity onPress={() => addItem(activeItem)} style={[styles.qtyBtn, styles.qtyBtnPlus]}>
+                  <Text style={[styles.qtyBtnText, { color: '#fff' }]}>+</Text>
                 </TouchableOpacity>
               </View>
-              {qty > 0 && <Text style={styles.qtyTotal}>= {activeItem.price * qty} MAD</Text>}
+              {qty > 0 && <Text style={styles.qtyTotal}>{activeItem.price * qty} MAD</Text>}
             </View>
             <TouchableOpacity
-              style={[styles.addBtn, { backgroundColor: cat?.accent || '#1a1a1a' }]}
+              style={[styles.addBtn, { backgroundColor: cat?.accent || C.brand }]}
               onPress={() => { addItem(activeItem); setActiveItem(null) }}
             >
               <Text style={styles.addBtnText}>Ajouter au panier</Text>
@@ -430,6 +388,7 @@ export default function ClientTrackingScreen({ navigation }) {
 
     return (
       <View style={styles.root}>
+        {/* Order header */}
         <View style={styles.orderHeader}>
           <TouchableOpacity onPress={() => {
             if (step === 1) { setStep(0); setActiveCat(null) }
@@ -446,11 +405,11 @@ export default function ClientTrackingScreen({ navigation }) {
 
         <ScrollView style={styles.orderScroll} contentContainerStyle={styles.orderContent}>
 
-          {/* STEP 0 : Catégories */}
+          {/* STEP 0 : Categories */}
           {step === 0 && (
             <>
               <Text style={styles.stepTitle}>Que voulez-vous livrer ?</Text>
-              <Text style={styles.stepSub}>Choisissez une catégorie</Text>
+              <Text style={styles.stepSub}>Choisissez une categorie</Text>
               <View style={styles.catsGrid}>
                 {CATEGORIES.map(cat => (
                   <TouchableOpacity
@@ -481,9 +440,11 @@ export default function ClientTrackingScreen({ navigation }) {
                   <TouchableOpacity
                     key={cat.id}
                     onPress={() => setActiveCat(cat)}
-                    style={[styles.catTab, activeCat.id === cat.id && { backgroundColor: activeCat.accent, borderColor: activeCat.accent }]}
+                    style={[styles.catTab, activeCat.id === cat.id && { backgroundColor: C.brand, borderColor: C.brand }]}
                   >
-                    <Text style={[styles.catTabText, activeCat.id === cat.id && { color: '#fff' }]}>{cat.label}</Text>
+                    <Text style={[styles.catTabText, activeCat.id === cat.id && { color: '#fff' }]}>
+                      {cat.label}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -492,11 +453,11 @@ export default function ClientTrackingScreen({ navigation }) {
                 {activeCat.items.map(item => {
                   const qty = cart[item.id] || 0
                   return (
-                    <View key={item.id} style={[styles.itemCard, qty > 0 && { borderColor: activeCat.accent, borderWidth: 2 }]}>
+                    <View key={item.id} style={[styles.itemCard, qty > 0 && { borderColor: C.brand, borderWidth: 2 }]}>
                       <TouchableOpacity onPress={() => setActiveItem(item)}>
                         <Image source={{ uri: item.photo }} style={styles.itemPhoto} />
                         {qty > 0 && (
-                          <View style={[styles.itemQtyBadge, { backgroundColor: activeCat.accent }]}>
+                          <View style={[styles.itemQtyBadge, { backgroundColor: C.brand }]}>
                             <Text style={styles.itemQtyBadgeText}>{qty}</Text>
                           </View>
                         )}
@@ -507,18 +468,18 @@ export default function ClientTrackingScreen({ navigation }) {
                         </TouchableOpacity>
                         <Text style={styles.itemDesc} numberOfLines={1}>{item.description}</Text>
                         <View style={styles.itemFooter}>
-                          <Text style={[styles.itemPrice, { color: activeCat.accent }]}>{item.price} MAD</Text>
+                          <Text style={[styles.itemPrice, { color: C.brand }]}>{item.price} MAD</Text>
                           {qty === 0 ? (
-                            <TouchableOpacity onPress={() => addItem(item)} style={[styles.addSmBtn, { backgroundColor: activeCat.accent }]}>
+                            <TouchableOpacity onPress={() => addItem(item)} style={styles.addSmBtn}>
                               <Text style={styles.addSmBtnText}>+</Text>
                             </TouchableOpacity>
                           ) : (
                             <View style={styles.qtyMini}>
                               <TouchableOpacity onPress={() => removeItem(item.id)} style={styles.qtyMiniBtn}>
-                                <Text style={[styles.qtyMiniBtnText, { color: activeCat.accent }]}>−</Text>
+                                <Text style={styles.qtyMiniBtnText}>-</Text>
                               </TouchableOpacity>
-                              <Text style={[styles.qtyMiniVal, { color: activeCat.accent }]}>{qty}</Text>
-                              <TouchableOpacity onPress={() => addItem(item)} style={[styles.qtyMiniBtn, { backgroundColor: activeCat.accent }]}>
+                              <Text style={styles.qtyMiniVal}>{qty}</Text>
+                              <TouchableOpacity onPress={() => addItem(item)} style={[styles.qtyMiniBtn, styles.qtyMiniBtnPlus]}>
                                 <Text style={[styles.qtyMiniBtnText, { color: '#fff' }]}>+</Text>
                               </TouchableOpacity>
                             </View>
@@ -542,17 +503,17 @@ export default function ClientTrackingScreen({ navigation }) {
           {/* STEP 2 : Adresse */}
           {step === 2 && (
             <>
-              <Text style={styles.stepTitle}>Où livrer ?</Text>
+              <Text style={styles.stepTitle}>Ou livrer ?</Text>
               {!!error && <Text style={styles.errorText}>{error}</Text>}
 
               <View style={styles.fieldGroup}>
-                <Text style={styles.fieldLabel}>ADRESSE DE RÉCUPÉRATION</Text>
+                <Text style={styles.fieldLabel}>ADRESSE DE RECUPERATION</Text>
                 <TextInput
                   style={styles.input}
                   value={form.pickupAddress}
                   onChangeText={v => setForm(f => ({ ...f, pickupAddress: v }))}
-                  placeholder="Ex: Marché central…"
-                  placeholderTextColor="#9CA3AF"
+                  placeholder="Ex: Marche central..."
+                  placeholderTextColor={C.textSecondary}
                 />
               </View>
               <View style={styles.fieldGroup}>
@@ -562,7 +523,7 @@ export default function ClientTrackingScreen({ navigation }) {
                   value={form.address}
                   onChangeText={v => setForm(f => ({ ...f, address: v }))}
                   placeholder="Ex: 12 Rue Mohammed V, Marrakech"
-                  placeholderTextColor="#9CA3AF"
+                  placeholderTextColor={C.textSecondary}
                 />
               </View>
               <View style={styles.fieldGroup}>
@@ -571,8 +532,8 @@ export default function ClientTrackingScreen({ navigation }) {
                   style={[styles.input, { height: 90, textAlignVertical: 'top' }]}
                   value={form.note}
                   onChangeText={v => setForm(f => ({ ...f, note: v }))}
-                  placeholder="Ex: Sonnez 2 fois, 1er étage…"
-                  placeholderTextColor="#9CA3AF"
+                  placeholder="Ex: Sonnez 2 fois, 1er etage..."
+                  placeholderTextColor={C.textSecondary}
                   multiline
                 />
               </View>
@@ -580,11 +541,10 @@ export default function ClientTrackingScreen({ navigation }) {
                 style={styles.nextBtn}
                 onPress={() => {
                   if (!form.address.trim()) { setError('Adresse requise'); return }
-                  setError('')
-                  setStep(3)
+                  setError(''); setStep(3)
                 }}
               >
-                <Text style={styles.nextBtnText}>Continuer →</Text>
+                <Text style={styles.nextBtnText}>Continuer</Text>
               </TouchableOpacity>
             </>
           )}
@@ -592,7 +552,7 @@ export default function ClientTrackingScreen({ navigation }) {
           {/* STEP 3 : Résumé */}
           {step === 3 && (
             <>
-              <Text style={styles.stepTitle}>Résumé de commande</Text>
+              <Text style={styles.stepTitle}>Resume de commande</Text>
               {!!error   && <Text style={styles.errorText}>{error}</Text>}
               {!!success && <Text style={styles.successText}>{success}</Text>}
 
@@ -602,7 +562,7 @@ export default function ClientTrackingScreen({ navigation }) {
                     <Image source={{ uri: item.photo }} style={styles.summaryThumb} />
                     <View style={{ flex: 1 }}>
                       <Text style={styles.summaryName}>{item.name}</Text>
-                      <Text style={styles.summaryQty}>{item.qty} × {item.price} MAD</Text>
+                      <Text style={styles.summaryQty}>{item.qty} x {item.price} MAD</Text>
                     </View>
                     <Text style={styles.summaryPrice}>{item.price * item.qty} MAD</Text>
                   </View>
@@ -615,17 +575,14 @@ export default function ClientTrackingScreen({ navigation }) {
 
               <View style={styles.summaryCard}>
                 {[
-                  { i: '', l: 'Récupéré chez', v: form.pickupAddress || 'Entrepôt central' },
-                  { i: '', l: 'Livré à',        v: form.address },
-                  { i: '', l: 'Destinataire',   v: `${user?.name} · ${user?.phone}` },
-                  { i: '', l: 'Délai estimé',   v: "Aujourd'hui · 30–60 min" },
+                  { l: 'Recupere chez', v: form.pickupAddress || 'Entrepot central' },
+                  { l: 'Livre a',       v: form.address },
+                  { l: 'Destinataire',  v: `${user?.name} · ${user?.phone}` },
+                  { l: 'Delai estime',  v: "Aujourd'hui · 30-60 min" },
                 ].map((r, i) => (
                   <View key={i} style={styles.summaryInfoRow}>
-                    <Text style={styles.summaryInfoIcon}>{r.i}</Text>
-                    <View>
-                      <Text style={styles.summaryInfoLabel}>{r.l}</Text>
-                      <Text style={styles.summaryInfoVal}>{r.v}</Text>
-                    </View>
+                    <Text style={styles.summaryInfoLabel}>{r.l}</Text>
+                    <Text style={styles.summaryInfoVal}>{r.v}</Text>
                   </View>
                 ))}
               </View>
@@ -640,7 +597,7 @@ export default function ClientTrackingScreen({ navigation }) {
                   : <Text style={styles.confirmBtnText}>Confirmer · {cartTotal} MAD</Text>
                 }
               </TouchableOpacity>
-              <Text style={styles.payNote}>Paiement à la livraison</Text>
+              <Text style={styles.payNote}>Paiement a la livraison</Text>
             </>
           )}
         </ScrollView>
@@ -648,194 +605,202 @@ export default function ClientTrackingScreen({ navigation }) {
     )
   }
 
-  // VUE DÉTAIL COMMANDE
-if (view === 'detail' && selected) {
-  const info    = STATUS_INFO[selected.status] || STATUS_INFO.pending
-  const stepIdx = STEPS.findIndex(s => s.key === selected.status)
-  const items   = parseItems(selected.items)
-  const driver  = selected.DeliveryOrder?.Driver
+  // ════════════════════════════════════════════════════════════════════════════
+  // VUE DETAIL COMMANDE
+  // ════════════════════════════════════════════════════════════════════════════
+  if (view === 'detail' && selected) {
+    const info    = STATUS_INFO[selected.status] || STATUS_INFO.pending
+    const stepIdx = STEPS.findIndex(s => s.key === selected.status)
+    const items   = parseItems(selected.items)
+    const driver  = selected.DeliveryOrder?.Driver
 
-  const canCancel = selected.status === 'pending'
-  const canRate   = selected.status === 'delivered' && !selected.rating
-  const isInProgress = selected.status === 'in_progress'
+    const canCancel    = selected.status === 'pending'
+    const canRate      = selected.status === 'delivered' && !selected.rating
+    const isInProgress = selected.status === 'in_progress'
 
-  const statusBg = {
-    pending:     '#FEF9C3',
-    in_progress: '#DBEAFE',
-    delivered:   '#DCFCE7',
-    failed:      '#FEE2E2',
-  }[selected.status] || '#F3F4F6'
+    const statusColors = {
+      pending:     { bg: '#FFFBEB', border: '#FDE68A' },
+      in_progress: { bg: '#EFF6FF', border: '#BFDBFE' },
+      delivered:   { bg: '#E8FBF0', border: '#B3EED0' },
+      failed:      { bg: '#FEF2F2', border: '#FECACA' },
+    }[selected.status] || { bg: C.bg, border: C.border }
 
-  return (
-    <View style={{ flex: 1, backgroundColor: '#F3F4F6' }}>
-      {/* Modal notation (par-dessus tout) */}
-      {ratingModal && (
-        <RatingModal
-          pointId={ratingModal.pointId}
-          driverName={ratingModal.driverName}
-          onClose={() => setRatingModal(null)}
-          onSubmit={handleRate}
-        />
-      )}
+    return (
+      <View style={{ flex: 1, backgroundColor: C.bg }}>
+        {ratingModal && (
+          <RatingModal
+            pointId={ratingModal.pointId}
+            driverName={ratingModal.driverName}
+            onClose={() => setRatingModal(null)}
+            onSubmit={handleRate}
+          />
+        )}
 
-      {/* ScrollView principal */}
-      <ScrollView
-        style={styles.root}
-        contentContainerStyle={{ paddingBottom: isInProgress && driver ? 100 : 40 }}
-      >
-        <View style={styles.detailTopBar}>
-          <TouchableOpacity onPress={() => setView('list')}>
-            <Text style={styles.backLink}>← Mes commandes</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Bannière statut */}
-        <View style={[styles.statusBanner, { backgroundColor: statusBg }]}>
-          <StatusBadge status={selected.status} />
-          <Text style={styles.statusMsg}>{info.msg}</Text>
-        </View>
-
-        {canCancel && (
-          <View style={styles.cancelCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cancelCardTitle}>Annuler la commande</Text>
-              <Text style={styles.cancelCardSub}>Possible avant que le livreur démarre</Text>
-            </View>
-            <TouchableOpacity
-              style={[styles.cancelActionBtn, cancelling && { opacity: 0.4 }]}
-              onPress={() => handleCancel(selected.id)}
-              disabled={cancelling}
-            >
-              <Text style={styles.cancelActionBtnText}>{cancelling ? '…' : '✕ Annuler'}</Text>
+        <ScrollView
+          style={styles.root}
+          contentContainerStyle={{ paddingBottom: isInProgress && driver ? 100 : 40 }}
+        >
+          <View style={styles.detailTopBar}>
+            <TouchableOpacity onPress={() => setView('list')}>
+              <Text style={styles.backLink}>← Mes commandes</Text>
             </TouchableOpacity>
           </View>
-        )}
 
-        {canRate && (
-          <TouchableOpacity
-            style={styles.rateCard}
-            onPress={() => setRatingModal({
-              pointId:    selected.id,
-              driverName: driver?.name || 'le livreur',
-            })}
-            activeOpacity={0.8}
-          >
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rateCardTitle}>Évaluer votre livraison</Text>
-              <Text style={styles.rateCardSub}>
-                Notez l'expérience avec {driver?.name || 'votre livreur'}
-              </Text>
-            </View>
-            <Text style={{ fontSize: 28 }}>⭐</Text>
-          </TouchableOpacity>
-        )}
-
-        {!!selected.rating && (
-          <View style={styles.ratingDisplay}>
-            <Text style={styles.ratingDisplayTitle}>Votre évaluation</Text>
-            <View style={{ flexDirection: 'row', gap: 3, marginTop: 6 }}>
-              {[1, 2, 3, 4, 5].map(s => (
-                <Text key={s} style={{ fontSize: 22, color: s <= selected.rating ? '#F59E0B' : '#E5E7EB' }}>
-                  ★
-                </Text>
-              ))}
-            </View>
-            {!!selected.ratingComment && (
-              <Text style={styles.ratingComment}>"{selected.ratingComment}"</Text>
-            )}
+          {/* Status banner */}
+          <View style={[styles.statusBanner, { backgroundColor: statusColors.bg, borderColor: statusColors.border }]}>
+            <StatusBadge status={selected.status} />
+            <Text style={styles.statusMsg}>{info.msg}</Text>
           </View>
-        )}
 
-        {/* Progression */}
-        {selected.status !== 'failed' && (
-          <View style={styles.progressCard}>
-            <View style={styles.progressTrack} />
-            <View style={[
-              styles.progressFillAbs,
-              { width: stepIdx === 0 ? '0%' : stepIdx === 1 ? '50%' : '100%' },
-            ]} />
-            <View style={styles.stepsRow}>
-              {STEPS.map((s, i) => (
-                <View key={s.key} style={styles.stepItem}>
-                  <View style={[styles.stepDot, i <= stepIdx && styles.stepDotActive]}>
-                    <Text style={styles.stepIcon}>{s.icon}</Text>
+          {canCancel && (
+            <View style={styles.cancelCard}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.cancelCardTitle}>Annuler la commande</Text>
+                <Text style={styles.cancelCardSub}>Possible avant que le livreur demarre</Text>
+              </View>
+              <TouchableOpacity
+                style={[styles.cancelActionBtn, cancelling && { opacity: 0.4 }]}
+                onPress={() => handleCancel(selected.id)}
+                disabled={cancelling}
+              >
+                <Text style={styles.cancelActionBtnText}>{cancelling ? '...' : 'Annuler'}</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {canRate && (
+            <TouchableOpacity
+              style={styles.rateCard}
+              onPress={() => setRatingModal({ pointId: selected.id, driverName: driver?.name || 'le livreur' })}
+              activeOpacity={0.8}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rateCardTitle}>Evaluer votre livraison</Text>
+                <Text style={styles.rateCardSub}>Notez l'experience avec {driver?.name || 'votre livreur'}</Text>
+              </View>
+              <View style={styles.starIcon}>
+                <Text style={styles.starIconText}>★</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+
+          {!!selected.rating && (
+            <View style={styles.ratingDisplay}>
+              <Text style={styles.ratingDisplayTitle}>Votre evaluation</Text>
+              <View style={{ flexDirection: 'row', gap: 3, marginTop: 6 }}>
+                {[1, 2, 3, 4, 5].map(s => (
+                  <Text key={s} style={{ fontSize: 20, color: s <= selected.rating ? '#F59E0B' : C.border }}>★</Text>
+                ))}
+              </View>
+              {!!selected.ratingComment && (
+                <Text style={styles.ratingComment}>"{selected.ratingComment}"</Text>
+              )}
+            </View>
+          )}
+
+          {/* Progression */}
+          {selected.status !== 'failed' && (
+            <View style={styles.progressCard}>
+              <View style={styles.progressTrack} />
+              <View style={[
+                styles.progressFillAbs,
+                { width: stepIdx === 0 ? '0%' : stepIdx === 1 ? '50%' : '100%' },
+              ]} />
+              <View style={styles.stepsRow}>
+                {STEPS.map((s, i) => (
+                  <View key={s.key} style={styles.stepItem}>
+                    <View style={[styles.stepDot, i <= stepIdx && styles.stepDotActive]}>
+                      <Text style={[styles.stepNum, i <= stepIdx && { color: '#fff' }]}>{i + 1}</Text>
+                    </View>
+                    <Text style={[styles.stepLabel, i <= stepIdx && styles.stepLabelActive]}>{s.label}</Text>
                   </View>
-                  <Text style={[styles.stepLabel, i <= stepIdx && styles.stepLabelActive]}>{s.label}</Text>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* GPS map */}
+          {selected.status === 'in_progress' && (
+            <View style={styles.mapCard}>
+              <View style={styles.mapCardHeader}>
+                <View style={styles.liveGreen} />
+                <Text style={styles.mapCardTitle}>Suivi GPS en direct</Text>
+                {!driverPos && <Text style={styles.mapCardSub}>En attente...</Text>}
+              </View>
+              <MapView
+                style={styles.map}
+                provider={PROVIDER_GOOGLE}
+                region={driverPos
+                  ? { ...driverPos, latitudeDelta: 0.015, longitudeDelta: 0.015 }
+                  : { latitude: 31.6295, longitude: -7.9811, latitudeDelta: 0.02, longitudeDelta: 0.02 }
+                }
+              >
+                {driverPos && (
+                  <Marker coordinate={driverPos} anchor={{ x: 0.5, y: 0.5 }}>
+                    <View style={styles.driverMarkerOuter}>
+                      <View style={styles.driverMarkerInner} />
+                    </View>
+                  </Marker>
+                )}
+                {selected.latitude && selected.longitude && (
+                  <Marker coordinate={{ latitude: selected.latitude, longitude: selected.longitude }} pinColor={C.red} />
+                )}
+              </MapView>
+              <Text style={styles.mapNote}>Position mise a jour toutes les 10 secondes</Text>
+            </View>
+          )}
+
+          {/* Articles */}
+          {items.length > 0 && (
+            <View style={styles.infoCard}>
+              <Text style={styles.infoCardTitle}>Articles commandes</Text>
+              {items.map((item, i) => (
+                <View key={i} style={[styles.itemRow2, i < items.length - 1 && styles.itemRow2Border]}>
+                  {item.photo && <Image source={{ uri: item.photo }} style={styles.itemThumb2} />}
+                  <Text style={styles.itemRow2Name}>{item.name} x{item.qty}</Text>
+                  <Text style={styles.itemRow2Price}>{item.price * item.qty} MAD</Text>
                 </View>
               ))}
-            </View>
-          </View>
-        )}
-
-        {/* Carte GPS */}
-        {selected.status === 'in_progress' && (
-          <View style={styles.mapCard}>
-            <View style={styles.mapCardHeader}>
-              <View style={styles.liveGreen} />
-              <Text style={styles.mapCardTitle}>Suivi GPS en direct</Text>
-              {!driverPos && <Text style={styles.mapCardSub}>En attente…</Text>}
-            </View>
-            <MapView
-              style={styles.map}
-              provider={PROVIDER_GOOGLE}
-              region={driverPos
-                ? { ...driverPos, latitudeDelta: 0.015, longitudeDelta: 0.015 }
-                : { latitude: 31.6295, longitude: -7.9811, latitudeDelta: 0.02, longitudeDelta: 0.02 }
-              }
-            >
-              {driverPos && (
-                <Marker coordinate={driverPos} anchor={{ x: 0.5, y: 0.5 }}>
-                  {/* Marqueur scooter avec cercle bleu — comme sur la photo */}
-                  <View style={styles.driverMarkerOuter}>
-                    <View style={styles.driverMarkerInner}>
-                      <Text style={{ fontSize: 18 }}>🛵</Text>
-                    </View>
-                  </View>
-                </Marker>
+              {selected.totalPrice && (
+                <View style={[styles.itemRow2, { borderTopWidth: 1.5, borderTopColor: C.border, marginTop: 4, paddingTop: 12 }]}>
+                  <Text style={[styles.itemRow2Name, { fontWeight: '800' }]}>Total</Text>
+                  <Text style={[styles.itemRow2Price, { fontSize: 16 }]}>{selected.totalPrice} MAD</Text>
+                </View>
               )}
-              {selected.latitude && selected.longitude && (
-                <Marker
-                  coordinate={{ latitude: selected.latitude, longitude: selected.longitude }}
-                  pinColor="#EF4444"
-                />
-              )}
-            </MapView>
-            <Text style={styles.mapNote}>Position mise à jour toutes les 10 secondes</Text>
-          </View>
-        )}
+            </View>
+          )}
 
-        {/* Articles */}
-        {items.length > 0 && (
+          {/* Adresse */}
           <View style={styles.infoCard}>
-            <Text style={styles.infoCardTitle}>Articles commandés</Text>
-            {items.map((item, i) => (
-              <View key={i} style={[styles.itemRow2, i < items.length - 1 && styles.itemRow2Border]}>
-                {item.photo && <Image source={{ uri: item.photo }} style={styles.itemThumb2} />}
-                <Text style={styles.itemRow2Name}>{item.name} ×{item.qty}</Text>
-                <Text style={styles.itemRow2Price}>{item.price * item.qty} MAD</Text>
-              </View>
-            ))}
-            {selected.totalPrice && (
-              <View style={[styles.itemRow2, { borderTopWidth: 2, borderTopColor: '#E5E7EB', marginTop: 4, paddingTop: 10 }]}>
-                <Text style={[styles.itemRow2Name, { fontWeight: '800' }]}>Total</Text>
-                <Text style={[styles.itemRow2Price, { fontSize: 16 }]}>{selected.totalPrice} MAD</Text>
-              </View>
+            <Text style={styles.infoCardTitle}>Details</Text>
+            <InfoRowDetail label="Adresse" value={selected.address} />
+            {selected.pickupAddress && (
+              <InfoRowDetail label="Recupere chez" value={selected.pickupAddress} />
             )}
           </View>
-        )}
 
-        {/* Détails adresse */}
-        <View style={styles.infoCard}>
-          <Text style={styles.infoCardTitle}>Détails</Text>
-          <InfoRowDetail label="🏠 Adresse" value={selected.address} />
-          {selected.pickupAddress && (
-            <InfoRowDetail label="📍 Récupéré chez" value={selected.pickupAddress} />
+          {/* Driver (scroll) - if not in progress */}
+          {driver && !isInProgress && (
+            <View style={styles.driverCard}>
+              <View style={styles.driverAvatar}>
+                <Text style={styles.driverInitials}>
+                  {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.driverName}>{driver.name}</Text>
+                <Text style={styles.driverVehicle}>{driver.vehicle}</Text>
+              </View>
+              <TouchableOpacity style={styles.callBtn} onPress={() => Linking.openURL(`tel:${driver.phone}`)}>
+                <Text style={styles.callBtnText}>Appeler</Text>
+              </TouchableOpacity>
+            </View>
           )}
-        </View>
+        </ScrollView>
 
-        {/* Livreur dans le scroll seulement si PAS en route */}
-        {driver && !isInProgress && (
-          <View style={styles.driverCard}>
+        {/* Driver sticky - if in progress */}
+        {isInProgress && driver && (
+          <View style={styles.driverCardSticky}>
             <View style={styles.driverAvatar}>
               <Text style={styles.driverInitials}>
                 {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
@@ -843,59 +808,43 @@ if (view === 'detail' && selected) {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.driverName}>{driver.name}</Text>
-              <Text style={styles.driverVehicle}>{driver.vehicle}</Text>
+              <Text style={styles.driverVehicle}>{driver.vehicle || 'Moto'}</Text>
             </View>
-            <TouchableOpacity
-              style={styles.callBtn}
-              onPress={() => Linking.openURL(`tel:${driver.phone}`)}
-            >
-              <Text style={styles.callBtnText}>📞 Appeler</Text>
+            <TouchableOpacity style={styles.callBtnLarge} onPress={() => Linking.openURL(`tel:${driver.phone}`)}>
+              <Text style={styles.callBtnLargeText}>Appeler</Text>
             </TouchableOpacity>
           </View>
         )}
-      </ScrollView>
+      </View>
+    )
+  }
 
-      {/* ── Carte livreur FIXE en bas — seulement si "en route" ── */}
-      {isInProgress && driver && (
-        <View style={styles.driverCardSticky}>
-          <View style={styles.driverAvatar}>
-            <Text style={styles.driverInitials}>
-              {driver.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.driverName}>{driver.name}</Text>
-            <Text style={styles.driverVehicle}>{driver.vehicle || 'Moto'}</Text>
-          </View>
-          <TouchableOpacity
-            style={styles.callBtnLarge}
-            onPress={() => Linking.openURL(`tel:${driver.phone}`)}
-          >
-            <Text style={styles.callBtnLargeText}>📞 Appeler</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </View>
-  )
-}
-  // ══════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
   // VUE LISTE
-  // ══════════════════════════════════════════════════════
+  // ════════════════════════════════════════════════════════════════════════════
   return (
     <View style={styles.root}>
       <FlatList
         data={[]}
         renderItem={null}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => { setRefreshing(true); loadOrders() }}
+            colors={[C.brand]}
+          />
+        }
         ListHeaderComponent={(
           <View>
+            {/* Header */}
             <View style={styles.listHeader}>
               <View>
+                <Text style={styles.listGreet}>Bonjour, {user?.name?.split(' ')[0] || 'Client'}</Text>
                 <Text style={styles.listTitle}>Mes commandes</Text>
-                <Text style={styles.listSub}>Bonjour, {user?.name?.split(' ')[0] || 'Client'} 👋</Text>
               </View>
               <View style={styles.headerButtons}>
-                <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-                  <Text style={styles.logoutBtnText}>🚪</Text>
+                <TouchableOpacity style={styles.iconBtn} onPress={handleLogout}>
+                  <Text style={styles.iconBtnText}>✕</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.orderNowBtn} onPress={() => { resetForm(); setView('order') }}>
                   <Text style={styles.orderNowText}>+ Commander</Text>
@@ -904,10 +853,10 @@ if (view === 'detail' && selected) {
             </View>
 
             {loading ? (
-              <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 60 }} />
+              <ActivityIndicator size="large" color={C.brand} style={{ marginTop: 60 }} />
             ) : orders.length === 0 ? (
               <View style={styles.emptyList}>
-                <Text style={styles.emptyIcon}>📦</Text>
+                <View style={styles.emptyCircle} />
                 <Text style={styles.emptyTitle}>Aucune commande</Text>
                 <TouchableOpacity style={styles.orderNowBtn} onPress={() => { resetForm(); setView('order') }}>
                   <Text style={styles.orderNowText}>Commander maintenant</Text>
@@ -917,7 +866,12 @@ if (view === 'detail' && selected) {
               <>
                 {activeOrders.length > 0 && (
                   <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>EN COURS</Text>
+                    <View style={styles.sectionRow}>
+                      <Text style={styles.sectionLabel}>EN COURS</Text>
+                      <View style={styles.sectionBadge}>
+                        <Text style={styles.sectionBadgeTxt}>{activeOrders.length}</Text>
+                      </View>
+                    </View>
                     {activeOrders.map(order => {
                       const stepIdx = STEPS.findIndex(s => s.key === order.status)
                       const items   = parseItems(order.items)
@@ -928,10 +882,10 @@ if (view === 'detail' && selected) {
                           onPress={() => { setSelected(order); setView('detail') }}
                         >
                           <View style={styles.activeOrderTop}>
-                            <View style={styles.pulseBlue} />
+                            <View style={styles.pulseDot} />
                             <StatusBadge status={order.status} />
                             {order.status === 'in_progress' && (
-                              <Text style={styles.enRouteText}>🚴 En route</Text>
+                              <Text style={styles.enRouteText}>En route</Text>
                             )}
                             {order.status === 'pending' && (
                               <Text style={styles.annulableText}>Annulable</Text>
@@ -945,14 +899,11 @@ if (view === 'detail' && selected) {
                                 : null
                             )}
                           </View>
-                          <Text style={styles.orderAddr} numberOfLines={1}>🏠 {order.address}</Text>
+                          <Text style={styles.orderAddr} numberOfLines={1}>{order.address}</Text>
                           {order.totalPrice && <Text style={styles.orderPrice}>{order.totalPrice} MAD</Text>}
                           <View style={styles.progressMini}>
                             {STEPS.map((s, i) => (
-                              <View
-                                key={s.key}
-                                style={[styles.progressMiniStep, i <= stepIdx && styles.progressMiniStepActive]}
-                              />
+                              <View key={s.key} style={[styles.progressMiniStep, i <= stepIdx && styles.progressMiniStepActive]} />
                             ))}
                           </View>
                         </TouchableOpacity>
@@ -963,7 +914,9 @@ if (view === 'detail' && selected) {
 
                 {pastOrders.length > 0 && (
                   <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>HISTORIQUE</Text>
+                    <View style={styles.sectionRow}>
+                      <Text style={styles.sectionLabel}>HISTORIQUE</Text>
+                    </View>
                     {pastOrders.map(order => {
                       const items    = parseItems(order.items)
                       const hasRated = !!order.rating
@@ -982,12 +935,12 @@ if (view === 'detail' && selected) {
                           </View>
                           <View style={{ flex: 1 }}>
                             <Text style={styles.orderAddr} numberOfLines={1}>{order.address}</Text>
-                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 }}>
-                              {order.totalPrice && (
-                                <Text style={styles.orderPrice2}>{order.totalPrice} MAD</Text>
-                              )}
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 }}>
+                              {order.totalPrice && <Text style={styles.orderPrice2}>{order.totalPrice} MAD</Text>}
                               {order.status === 'delivered' && !hasRated && (
-                                <Text style={styles.toRateText}>⭐ À noter</Text>
+                                <View style={styles.toRateBadge}>
+                                  <Text style={styles.toRateText}>A noter</Text>
+                                </View>
                               )}
                               {hasRated && (
                                 <Text style={styles.ratedStars}>
@@ -998,7 +951,7 @@ if (view === 'detail' && selected) {
                           </View>
                           <View style={styles.pastRight}>
                             <StatusBadge status={order.status} size="sm" />
-                            <Text style={styles.chevron}>›</Text>
+                            <Text style={styles.chevronSm}>›</Text>
                           </View>
                         </TouchableOpacity>
                       )
@@ -1009,347 +962,329 @@ if (view === 'detail' && selected) {
             )}
           </View>
         )}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={() => { setRefreshing(true); loadOrders() }}
-            colors={['#2563EB']}
-          />
-        }
-        contentContainerStyle={{ paddingBottom: 40 }}
       />
-    </View>
-  )
-}
-
-// ─── Sous-composant ────────────────────────────────────────────────────────────
-function InfoRowDetail({ label, value }) {
-  return (
-    <View style={styles.infoRowD}>
-      <Text style={styles.infoLabelD}>{label}</Text>
-      <Text style={styles.infoValueD}>{value}</Text>
     </View>
   )
 }
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#F3F4F6' },
+  root: { flex: 1, backgroundColor: C.bg },
 
-  // Order header
-  orderHeader: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14,
-    backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
+  // ── List header
+  listHeader: {
+    flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between',
+    paddingHorizontal: 20, paddingTop: 54, paddingBottom: 16,
+    backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border,
   },
-  backLink:      { fontSize: 14, fontWeight: '600', color: '#6B7280' },
-  progressBar:   { flex: 1, height: 6, backgroundColor: '#E5E7EB', borderRadius: 3, overflow: 'hidden' },
-  progressFill:  { height: '100%', backgroundColor: '#2563EB', borderRadius: 3 },
-  progressLabel: { fontSize: 12, color: '#9CA3AF' },
+  listGreet: { fontSize: 12, color: C.textSecondary, letterSpacing: 0.5, textTransform: 'uppercase', marginBottom: 2 },
+  listTitle: { fontSize: 22, fontWeight: '900', color: C.dark, letterSpacing: -0.5 },
+  headerButtons: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  iconBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1, borderColor: C.border, backgroundColor: C.card,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  iconBtnText: { fontSize: 13, fontWeight: '700', color: C.dark },
+  orderNowBtn: { backgroundColor: C.brand, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 9 },
+  orderNowText: { color: '#fff', fontSize: 13, fontWeight: '800' },
+
+  // ── Section
+  section:      { paddingHorizontal: 16, paddingTop: 20 },
+  sectionRow:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  sectionLabel: { fontSize: 11, fontWeight: '800', color: C.textSecondary, letterSpacing: 1 },
+  sectionBadge: { backgroundColor: C.brand, borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
+  sectionBadgeTxt: { fontSize: 10, fontWeight: '800', color: '#fff' },
+
+  // ── Active order card
+  activeOrderCard: {
+    backgroundColor: C.card, borderRadius: 18,
+    borderWidth: 1.5, borderColor: C.border, marginBottom: 12, padding: 16,
+  },
+  activeOrderTop: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  pulseDot:       { width: 8, height: 8, borderRadius: 4, backgroundColor: C.brand },
+  enRouteText:    { fontSize: 12, fontWeight: '700', color: C.brand, flex: 1 },
+  annulableText:  { fontSize: 12, fontWeight: '600', color: C.textSecondary, flex: 1 },
+  chevron:        { fontSize: 20, color: C.textMuted },
+  thumbsRow:      { flexDirection: 'row', gap: 6, marginBottom: 10 },
+  orderThumb:     { width: 44, height: 44, borderRadius: 10 },
+  orderAddr:      { fontSize: 13, color: C.textSecondary, marginBottom: 6 },
+  orderPrice:     { fontSize: 16, fontWeight: '800', color: C.dark, marginBottom: 10, letterSpacing: -0.3 },
+  progressMini:   { flexDirection: 'row', gap: 5 },
+  progressMiniStep: { flex: 1, height: 4, borderRadius: 2, backgroundColor: C.border },
+  progressMiniStepActive: { backgroundColor: C.brand },
+
+  // ── Past order card
+  pastOrderCard: {
+    backgroundColor: C.card, borderRadius: 14, padding: 14,
+    borderWidth: 1, borderColor: C.border, marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+  },
+  pastRight:    { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  orderPrice2:  { fontSize: 12, color: C.textSecondary, fontWeight: '600' },
+  toRateBadge:  { backgroundColor: '#FFFBEB', borderRadius: 8, paddingHorizontal: 7, paddingVertical: 2 },
+  toRateText:   { fontSize: 11, color: '#B45309', fontWeight: '700' },
+  ratedStars:   { fontSize: 12, color: '#F59E0B' },
+  chevronSm:    { fontSize: 18, color: C.textMuted },
+
+  // ── Empty
+  emptyList:  { alignItems: 'center', paddingVertical: 64, gap: 16 },
+  emptyCircle:{ width: 72, height: 72, borderRadius: 36, backgroundColor: C.border },
+  emptyTitle: { fontSize: 17, fontWeight: '700', color: C.dark },
+
+  // ── Order flow
+  orderHeader: {
+    backgroundColor: C.card, paddingTop: 54, paddingBottom: 14, paddingHorizontal: 20,
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    borderBottomWidth: 1, borderBottomColor: C.border,
+  },
+  backLink:      { fontSize: 14, color: C.brand, fontWeight: '700' },
+  progressBar:   { flex: 1, height: 4, backgroundColor: C.border, borderRadius: 2, overflow: 'hidden' },
+  progressFill:  { height: '100%', backgroundColor: C.brand, borderRadius: 2 },
+  progressLabel: { fontSize: 12, fontWeight: '700', color: C.textSecondary },
   orderScroll:   { flex: 1 },
   orderContent:  { padding: 20, paddingBottom: 40 },
-  stepTitle:     { fontSize: 22, fontWeight: '800', color: '#111827', marginBottom: 4 },
-  stepSub:       { fontSize: 14, color: '#6B7280', marginBottom: 20 },
+
+  stepTitle: { fontSize: 24, fontWeight: '900', color: C.dark, letterSpacing: -0.5, marginBottom: 6 },
+  stepSub:   { fontSize: 14, color: C.textSecondary, marginBottom: 24 },
 
   // Categories grid
-  catsGrid:   { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  catCard:    { width: '47%', height: 140, borderRadius: 18, overflow: 'hidden', position: 'relative' },
-  catPhoto:   { width: '100%', height: '100%', position: 'absolute' },
-  catOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.45)' },
-  catTextBox: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: 12 },
-  catLabel:   { color: '#fff', fontSize: 15, fontWeight: '800' },
-  catSub:     { color: 'rgba(255,255,255,0.75)', fontSize: 11, marginTop: 2 },
+  catsGrid: { gap: 14 },
+  catCard:  { height: 160, borderRadius: 18, overflow: 'hidden' },
+  catPhoto: { width: '100%', height: '100%' },
+  catOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(26,26,46,0.45)' },
+  catTextBox: { position: 'absolute', bottom: 16, left: 16 },
+  catLabel:   { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
+  catSub:     { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
 
-  // Category tabs
-  catTabs:    { marginBottom: 16 },
-  catTab:     { borderWidth: 1, borderColor: '#E5E7EB', backgroundColor: '#fff', borderRadius: 20, paddingHorizontal: 16, paddingVertical: 8, marginRight: 8 },
-  catTabText: { fontSize: 13, fontWeight: '600', color: '#374151' },
+  // Cat tabs
+  catTabs: { marginBottom: 18 },
+  catTab: {
+    paddingHorizontal: 16, paddingVertical: 9,
+    borderRadius: 20, borderWidth: 1.5, borderColor: C.border,
+    backgroundColor: C.card, marginRight: 8,
+  },
+  catTabText: { fontSize: 13, fontWeight: '700', color: C.textSecondary },
 
   // Items grid
-  itemsGrid:       { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
-  itemCard:        { width: '47%', backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6' },
+  itemsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 20 },
+  itemCard: {
+    width: '47%', backgroundColor: C.card,
+    borderRadius: 16, overflow: 'hidden',
+    borderWidth: 1.5, borderColor: C.border,
+  },
   itemPhoto:       { width: '100%', height: 110 },
-  itemQtyBadge:    { position: 'absolute', top: 8, right: 8, width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  itemQtyBadgeText:{ color: '#fff', fontSize: 12, fontWeight: '800' },
+  itemQtyBadge:    { position: 'absolute', top: 8, right: 8, width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
+  itemQtyBadgeText:{ fontSize: 12, fontWeight: '800', color: '#fff' },
   itemInfo:        { padding: 10 },
-  itemName:        { fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  itemDesc:        { fontSize: 11, color: '#9CA3AF', marginBottom: 8 },
+  itemName:        { fontSize: 13, fontWeight: '700', color: C.dark, marginBottom: 2 },
+  itemDesc:        { fontSize: 11, color: C.textSecondary, marginBottom: 8 },
   itemFooter:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   itemPrice:       { fontSize: 14, fontWeight: '800' },
-  addSmBtn:        { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  addSmBtnText:    { color: '#fff', fontSize: 20, fontWeight: '700', lineHeight: 22 },
-// Marqueur scooter carte — cercle bleu comme sur la photo
-driverMarkerOuter: {
-  width: 52,
-  height: 52,
-  borderRadius: 26,
-  borderWidth: 3,
-  borderColor: '#2563EB',
-  backgroundColor: 'rgba(37,99,235,0.15)',
-  alignItems: 'center',
-  justifyContent: 'center',
-},
-driverMarkerInner: {
-  width: 36,
-  height: 36,
-  borderRadius: 18,
-  backgroundColor: '#fff',
-  alignItems: 'center',
-  justifyContent: 'center',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 2 },
-  shadowOpacity: 0.2,
-  shadowRadius: 4,
-  elevation: 4,
-},
-
-// Carte livreur fixe en bas (status in_progress)
-driverCardSticky: {
-  position: 'absolute',
-  bottom: 0,
-  left: 0,
-  right: 0,
-  backgroundColor: '#fff',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 14,
-  paddingHorizontal: 16,
-  paddingVertical: 14,
-  paddingBottom: 24,   // safe area iOS
-  borderTopWidth: 1,
-  borderTopColor: '#E5E7EB',
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: -3 },
-  shadowOpacity: 0.08,
-  shadowRadius: 8,
-  elevation: 10,
-},
-callBtnLarge: {
-  backgroundColor: '#22C55E',
-  paddingHorizontal: 20,
-  paddingVertical: 13,
-  borderRadius: 14,
-},
-callBtnLargeText: {
-  color: '#fff',
-  fontSize: 14,
-  fontWeight: '800',
-},
-  // Qty mini
-  qtyMini:        { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  qtyMiniBtn:     { width: 22, height: 22, borderRadius: 11, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#E5E7EB' },
-  qtyMiniBtnText: { fontSize: 14, fontWeight: '700' },
-  qtyMiniVal:     { fontSize: 13, fontWeight: '800', minWidth: 16, textAlign: 'center' },
+  addSmBtn:        { width: 28, height: 28, borderRadius: 8, backgroundColor: C.brand, alignItems: 'center', justifyContent: 'center' },
+  addSmBtnText:    { color: '#fff', fontSize: 16, fontWeight: '700' },
+  qtyMini:         { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  qtyMiniBtn:      { width: 24, height: 24, borderRadius: 6, borderWidth: 1.5, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
+  qtyMiniBtnPlus:  { backgroundColor: C.brand, borderColor: C.brand },
+  qtyMiniBtnText:  { fontSize: 14, fontWeight: '800', color: C.dark },
+  qtyMiniVal:      { fontSize: 13, fontWeight: '700', color: C.dark },
 
   // Cart bar
   cartBar: {
-    backgroundColor: '#2563EB', borderRadius: 18, paddingVertical: 16, paddingHorizontal: 24,
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 8,
-    shadowColor: '#2563EB', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10, elevation: 6,
+    position: 'absolute', bottom: 20, left: 20, right: 20,
+    backgroundColor: C.brand, borderRadius: 16,
+    paddingHorizontal: 20, paddingVertical: 16,
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
   },
-  cartBarLeft:  { color: '#fff', fontSize: 15, fontWeight: '700' },
-  cartBarRight: { color: '#fff', fontSize: 15, fontWeight: '700' },
+  cartBarLeft:  { fontSize: 14, fontWeight: '700', color: '#fff' },
+  cartBarRight: { fontSize: 14, fontWeight: '800', color: '#fff' },
 
   // Form
-  fieldGroup:   { marginBottom: 16 },
-  fieldLabel:   { fontSize: 11, fontWeight: '700', color: '#6B7280', letterSpacing: 0.5, marginBottom: 6 },
-  input:        { borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 13, fontSize: 15, color: '#111827', backgroundColor: '#fff' },
-  errorText:    { color: '#DC2626', fontSize: 13, marginBottom: 12 },
-  successText:  { color: '#16A34A', fontSize: 13, fontWeight: '600', marginBottom: 12 },
-  nextBtn:      { backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  nextBtnText:  { color: '#fff', fontSize: 16, fontWeight: '700' },
+  fieldGroup:  { marginBottom: 18 },
+  fieldLabel:  { fontSize: 11, fontWeight: '800', color: C.textSecondary, letterSpacing: 1.5, marginBottom: 8 },
+  input: {
+    backgroundColor: C.card, borderWidth: 1.5, borderColor: C.border,
+    borderRadius: 14, paddingHorizontal: 16, paddingVertical: 14,
+    fontSize: 15, color: C.dark,
+  },
+  nextBtn:     { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
+  nextBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
 
   // Summary
-  summaryCard:       { backgroundColor: '#fff', borderRadius: 18, overflow: 'hidden', marginBottom: 14, borderWidth: 1, borderColor: '#F3F4F6' },
-  summaryRow:        { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 },
-  summaryRowBorder:  { borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  summaryThumb:      { width: 52, height: 52, borderRadius: 12 },
-  summaryName:       { fontSize: 13, fontWeight: '600', color: '#111827' },
-  summaryQty:        { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
-  summaryPrice:      { fontSize: 13, fontWeight: '700', color: '#2563EB' },
-  summaryTotal:      { flexDirection: 'row', justifyContent: 'space-between', padding: 14, backgroundColor: '#F9FAFB', borderTopWidth: 1, borderTopColor: '#F3F4F6' },
-  summaryTotalLabel: { fontSize: 15, fontWeight: '800', color: '#111827' },
-  summaryTotalVal:   { fontSize: 16, fontWeight: '800', color: '#2563EB' },
-  summaryInfoRow:    { flexDirection: 'row', gap: 12, padding: 14, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  summaryInfoIcon:   { fontSize: 18, marginTop: 2 },
-  summaryInfoLabel:  { fontSize: 11, color: '#9CA3AF' },
-  summaryInfoVal:    { fontSize: 14, fontWeight: '600', color: '#111827', marginTop: 2 },
-  confirmBtn:        { backgroundColor: '#2563EB', borderRadius: 16, paddingVertical: 17, alignItems: 'center', marginBottom: 10 },
-  confirmBtnText:    { color: '#fff', fontSize: 16, fontWeight: '800' },
-  payNote:           { textAlign: 'center', fontSize: 12, color: '#9CA3AF' },
-  btnDisabled:       { opacity: 0.5 },
-
-  // Detail article
-  detailPhoto:     { width: '100%', height: 260 },
-  detailBack:      { position: 'absolute', top: 48, left: 16, backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 20, width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  detailBackText:  { fontSize: 20, color: '#111827', fontWeight: '700' },
-  detailBody:      { flex: 1, padding: 20 },
-  detailInfo:      { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
-  detailName:      { fontSize: 22, fontWeight: '800', color: '#111827', flex: 1 },
-  detailPrice:     { fontSize: 20, fontWeight: '800', marginLeft: 12, marginTop: 2 },
-  detailDesc:      { fontSize: 14, color: '#6B7280', lineHeight: 22, marginBottom: 24 },
-  qtyRow:          { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 24 },
-  qtyLabel:        { fontSize: 15, fontWeight: '600', color: '#374151' },
-  qtyControl:      { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', borderRadius: 30, paddingHorizontal: 12, paddingVertical: 8, gap: 16 },
-  qtyBtn:          { width: 30, height: 30, alignItems: 'center', justifyContent: 'center' },
-  qtyBtnText:      { fontSize: 22, fontWeight: '700', color: '#111827' },
-  qtyVal:          { fontSize: 20, fontWeight: '800', color: '#111827', minWidth: 24, textAlign: 'center' },
-  qtyTotal:        { fontSize: 14, color: '#6B7280' },
-  addBtn:          { borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  addBtnText:      { color: '#fff', fontSize: 16, fontWeight: '700' },
-
-  // List header
-  listHeader: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: 16, paddingTop: 52, paddingBottom: 16,
-    backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
+  summaryCard: {
+    backgroundColor: C.card, borderRadius: 16,
+    borderWidth: 1, borderColor: C.border, marginBottom: 14, overflow: 'hidden',
   },
-  headerButtons: { flexDirection: 'row', gap: 10 },
-  listTitle:     { fontSize: 24, fontWeight: '800', color: '#111827' },
-  listSub:       { fontSize: 13, color: '#6B7280', marginTop: 2 },
-  orderNowBtn:   { backgroundColor: '#2563EB', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10 },
-  orderNowText:  { color: '#fff', fontSize: 14, fontWeight: '700' },
-  logoutBtn:     { backgroundColor: '#EF4444', borderRadius: 14, paddingHorizontal: 16, paddingVertical: 10, alignItems: 'center', justifyContent: 'center' },
-  logoutBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  summaryRow:       { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  summaryRowBorder: { borderBottomWidth: 1, borderBottomColor: C.border },
+  summaryThumb:     { width: 44, height: 44, borderRadius: 10 },
+  summaryName:      { fontSize: 14, fontWeight: '700', color: C.dark },
+  summaryQty:       { fontSize: 12, color: C.textSecondary, marginTop: 2 },
+  summaryPrice:     { fontSize: 14, fontWeight: '800', color: C.dark },
+  summaryTotal:     { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderTopWidth: 1.5, borderTopColor: C.border },
+  summaryTotalLabel:{ fontSize: 14, fontWeight: '700', color: C.dark },
+  summaryTotalVal:  { fontSize: 18, fontWeight: '900', color: C.brand },
+  summaryInfoRow:   { flexDirection: 'row', justifyContent: 'space-between', padding: 14, borderBottomWidth: 1, borderBottomColor: C.border },
+  summaryInfoLabel: { fontSize: 13, color: C.textSecondary },
+  summaryInfoVal:   { fontSize: 13, fontWeight: '700', color: C.dark, maxWidth: '60%', textAlign: 'right' },
 
-  // Sections list
-  section:              { paddingHorizontal: 16, marginTop: 20 },
-  sectionTitle:         { fontSize: 11, fontWeight: '800', color: '#9CA3AF', letterSpacing: 1, marginBottom: 10 },
-  activeOrderCard:      { backgroundColor: '#fff', borderRadius: 20, padding: 16, borderWidth: 2, borderColor: '#BFDBFE', marginBottom: 12 },
-  activeOrderTop:       { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
-  pulseBlue:            { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6' },
-  enRouteText:          { fontSize: 12, color: '#2563EB', fontWeight: '600', marginLeft: 4 },
-  annulableText:        { fontSize: 12, color: '#F59E0B', fontWeight: '600', marginLeft: 4 },
-  chevron:              { marginLeft: 'auto', fontSize: 18, color: '#D1D5DB' },
-  thumbsRow:            { flexDirection: 'row', gap: 6, marginBottom: 10 },
-  orderThumb:           { width: 42, height: 42, borderRadius: 10 },
-  orderAddr:            { fontSize: 13, color: '#6B7280', marginBottom: 4 },
-  orderPrice:           { fontSize: 14, fontWeight: '800', color: '#2563EB', marginBottom: 10 },
-  progressMini:         { flexDirection: 'row', gap: 6 },
-  progressMiniStep:     { flex: 1, height: 5, borderRadius: 3, backgroundColor: '#F3F4F6' },
-  progressMiniStepActive:{ backgroundColor: '#3B82F6' },
-  pastOrderCard:        { backgroundColor: '#fff', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#F3F4F6', marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
-  pastRight:            { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  orderPrice2:          { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
-  toRateText:           { fontSize: 12, color: '#F59E0B', fontWeight: '700' },
-  ratedStars:           { fontSize: 13, color: '#F59E0B' },
-  emptyList:            { alignItems: 'center', paddingVertical: 60, gap: 16 },
-  emptyIcon:            { fontSize: 52 },
-  emptyTitle:           { fontSize: 18, fontWeight: '700', color: '#374151' },
+  confirmBtn:     { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginBottom: 10 },
+  confirmBtnText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+  payNote:        { textAlign: 'center', fontSize: 13, color: C.textSecondary, marginBottom: 20 },
+  btnDisabled:    { opacity: 0.45 },
+  errorText:      { color: C.red, fontSize: 13, marginBottom: 12, fontWeight: '600' },
+  successText:    { color: C.green, fontSize: 13, marginBottom: 12, fontWeight: '600' },
 
   // Detail view
-  detailTopBar:  { paddingHorizontal: 16, paddingTop: 52, paddingBottom: 14, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  statusBanner:  { margin: 16, borderRadius: 18, padding: 16, gap: 10 },
-  statusMsg:     { fontSize: 14, color: '#374151', lineHeight: 20 },
+  detailBack:     { position: 'absolute', top: 52, left: 16, zIndex: 10, backgroundColor: 'rgba(26,26,46,0.7)', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8 },
+  detailBackText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  detailPhoto:    { width: '100%', height: 280 },
+  detailBody:     { flex: 1, backgroundColor: C.card, borderTopLeftRadius: 24, borderTopRightRadius: 24, marginTop: -24, padding: 20 },
+  detailInfo:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 },
+  detailName:     { fontSize: 20, fontWeight: '900', color: C.dark, flex: 1, marginRight: 12 },
+  detailPrice:    { fontSize: 22, fontWeight: '900' },
+  detailDesc:     { fontSize: 14, color: C.textSecondary, lineHeight: 20, marginBottom: 20 },
+  qtyRow:         { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  qtyLabel:       { fontSize: 14, fontWeight: '700', color: C.dark },
+  qtyControl:     { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  qtyBtn:         { width: 34, height: 34, borderRadius: 10, borderWidth: 1.5, borderColor: C.border, alignItems: 'center', justifyContent: 'center' },
+  qtyBtnPlus:     { backgroundColor: C.brand, borderColor: C.brand },
+  qtyBtnText:     { fontSize: 18, fontWeight: '700', color: C.dark },
+  qtyVal:         { fontSize: 18, fontWeight: '800', color: C.dark, minWidth: 28, textAlign: 'center' },
+  qtyTotal:       { fontSize: 16, fontWeight: '800', color: C.brand },
+  addBtn:         { borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 4 },
+  addBtnText:     { color: '#fff', fontSize: 15, fontWeight: '800' },
 
-  // Cancel card
+  // Detail order
+  detailTopBar: {
+    paddingHorizontal: 20, paddingTop: 54, paddingBottom: 14,
+    backgroundColor: C.card, borderBottomWidth: 1, borderBottomColor: C.border,
+  },
+  statusBanner: {
+    margin: 16, borderRadius: 16, padding: 16, gap: 10,
+    borderWidth: 1,
+  },
+  statusMsg: { fontSize: 13, color: C.textPrimary, lineHeight: 19 },
+
   cancelCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#fff', borderRadius: 18,
-    marginHorizontal: 16, marginBottom: 14,
-    padding: 16, borderWidth: 1, borderColor: '#FEE2E2',
+    backgroundColor: C.card, borderRadius: 16,
+    marginHorizontal: 16, marginBottom: 12, padding: 16,
+    borderWidth: 1, borderColor: '#FECACA',
   },
-  cancelCardTitle:    { fontSize: 14, fontWeight: '700', color: '#111827' },
-  cancelCardSub:      { fontSize: 12, color: '#9CA3AF', marginTop: 2 },
-  cancelActionBtn:    { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
-  cancelActionBtnText:{ fontSize: 13, fontWeight: '700', color: '#DC2626' },
+  cancelCardTitle:    { fontSize: 14, fontWeight: '700', color: C.dark },
+  cancelCardSub:      { fontSize: 12, color: C.textSecondary, marginTop: 2 },
+  cancelActionBtn:    { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 9 },
+  cancelActionBtnText:{ fontSize: 13, fontWeight: '700', color: C.red },
 
-  // Rate card
   rateCard: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
-    backgroundColor: '#FFFBEB', borderRadius: 18,
-    marginHorizontal: 16, marginBottom: 14,
-    padding: 16, borderWidth: 1, borderColor: '#FDE68A',
+    backgroundColor: '#FFFBEB', borderRadius: 16,
+    marginHorizontal: 16, marginBottom: 12, padding: 16,
+    borderWidth: 1, borderColor: '#FDE68A',
   },
   rateCardTitle: { fontSize: 14, fontWeight: '700', color: '#92400E' },
   rateCardSub:   { fontSize: 12, color: '#B45309', marginTop: 2 },
+  starIcon:      { width: 42, height: 42, borderRadius: 21, backgroundColor: '#F59E0B', alignItems: 'center', justifyContent: 'center' },
+  starIconText:  { fontSize: 20, color: '#fff' },
 
-  // Rating display (note existante)
   ratingDisplay: {
-    backgroundColor: '#FFFBEB', borderRadius: 18,
-    marginHorizontal: 16, marginBottom: 14,
-    padding: 16, borderWidth: 1, borderColor: '#FDE68A',
+    backgroundColor: '#FFFBEB', borderRadius: 16,
+    marginHorizontal: 16, marginBottom: 12, padding: 16,
+    borderWidth: 1, borderColor: '#FDE68A',
   },
-  ratingDisplayTitle: { fontSize: 13, fontWeight: '700', color: '#92400E' },
-  ratingComment:      { fontSize: 12, color: '#B45309', marginTop: 8, fontStyle: 'italic' },
+  ratingDisplayTitle: { fontSize: 12, fontWeight: '800', color: '#92400E', letterSpacing: 0.5 },
+  ratingComment:      { fontSize: 13, color: '#B45309', marginTop: 8, fontStyle: 'italic' },
 
-  // Progress card (detail)
-  progressCard:    { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, padding: 20, marginBottom: 14, position: 'relative' },
-  progressTrack:   { position: 'absolute', top: 40, left: 40, right: 40, height: 3, backgroundColor: '#E5E7EB' },
-  progressFillAbs: { position: 'absolute', top: 40, left: 40, height: 3, backgroundColor: '#3B82F6', borderRadius: 2 },
+  // Progress track
+  progressCard:    { backgroundColor: C.card, borderRadius: 18, marginHorizontal: 16, padding: 24, marginBottom: 12, position: 'relative' },
+  progressTrack:   { position: 'absolute', top: 44, left: 48, right: 48, height: 3, backgroundColor: C.border },
+  progressFillAbs: { position: 'absolute', top: 44, left: 48, height: 3, backgroundColor: C.brand, borderRadius: 2 },
   stepsRow:        { flexDirection: 'row', justifyContent: 'space-between' },
   stepItem:        { alignItems: 'center', gap: 8, flex: 1 },
-  stepDot:         { width: 42, height: 42, borderRadius: 21, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#E5E7EB' },
-  stepDotActive:   { backgroundColor: '#2563EB', borderColor: '#2563EB' },
-  stepIcon:        { fontSize: 18 },
-  stepLabel:       { fontSize: 11, color: '#9CA3AF', fontWeight: '600', textAlign: 'center' },
-  stepLabelActive: { color: '#2563EB' },
+  stepDot:         { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F0F1F8', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: C.border },
+  stepDotActive:   { backgroundColor: C.brand, borderColor: C.brand },
+  stepNum:         { fontSize: 14, fontWeight: '800', color: C.textSecondary },
+  stepLabel:       { fontSize: 11, color: C.textSecondary, fontWeight: '600', textAlign: 'center' },
+  stepLabelActive: { color: C.brand },
 
-  // Map card
-  mapCard:       { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 16, marginBottom: 14, overflow: 'hidden' },
+  // Map
+  mapCard:       { backgroundColor: C.card, borderRadius: 18, marginHorizontal: 16, marginBottom: 12, overflow: 'hidden' },
   mapCardHeader: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 8 },
-  liveGreen:     { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22C55E' },
-  mapCardTitle:  { fontSize: 14, fontWeight: '700', color: '#111827', flex: 1 },
-  mapCardSub:    { fontSize: 12, color: '#9CA3AF' },
+  liveGreen:     { width: 8, height: 8, borderRadius: 4, backgroundColor: C.green },
+  mapCardTitle:  { fontSize: 14, fontWeight: '700', color: C.dark, flex: 1 },
+  mapCardSub:    { fontSize: 12, color: C.textSecondary },
   map:           { height: 220 },
-  mapNote:       { textAlign: 'center', fontSize: 12, color: '#9CA3AF', padding: 10 },
-  driverMarker:  { backgroundColor: '#fff', borderRadius: 20, padding: 4, borderWidth: 2, borderColor: '#2563EB' },
+  mapNote:       { textAlign: 'center', fontSize: 11, color: C.textSecondary, padding: 10 },
+  driverMarkerOuter: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(255,107,53,0.2)', alignItems: 'center', justifyContent: 'center' },
+  driverMarkerInner: { width: 28, height: 28, borderRadius: 14, backgroundColor: C.brand },
 
   // Info cards
-  infoCard:       { backgroundColor: '#fff', borderRadius: 18, marginHorizontal: 16, marginBottom: 14, overflow: 'hidden', borderWidth: 1, borderColor: '#F3F4F6' },
-  infoCardTitle:  { fontSize: 14, fontWeight: '700', color: '#374151', padding: 16, paddingBottom: 8 },
+  infoCard:       { backgroundColor: C.card, borderRadius: 16, marginHorizontal: 16, marginBottom: 12, overflow: 'hidden', borderWidth: 1, borderColor: C.border },
+  infoCardTitle:  { fontSize: 12, fontWeight: '800', color: C.textSecondary, letterSpacing: 0.8, padding: 16, paddingBottom: 10 },
   itemRow2:       { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  itemRow2Border: { borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  itemThumb2:     { width: 44, height: 44, borderRadius: 10 },
-  itemRow2Name:   { flex: 1, fontSize: 13, color: '#374151', fontWeight: '500' },
-  itemRow2Price:  { fontSize: 14, fontWeight: '700', color: '#2563EB' },
-  infoRowD:       { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F9FAFB' },
-  infoLabelD:     { fontSize: 13, color: '#6B7280', flex: 1 },
-  infoValueD:     { fontSize: 13, fontWeight: '600', color: '#111827', flex: 2, textAlign: 'right' },
+  itemRow2Border: { borderBottomWidth: 1, borderBottomColor: C.border },
+  itemThumb2:     { width: 42, height: 42, borderRadius: 10 },
+  itemRow2Name:   { flex: 1, fontSize: 13, color: C.dark, fontWeight: '500' },
+  itemRow2Price:  { fontSize: 14, fontWeight: '800', color: C.brand },
+  infoRowD:       { flexDirection: 'row', paddingHorizontal: 16, paddingVertical: 11, borderBottomWidth: 1, borderBottomColor: C.border },
+  infoLabelD:     { fontSize: 13, color: C.textSecondary, flex: 1 },
+  infoValueD:     { fontSize: 13, fontWeight: '700', color: C.dark, flex: 2, textAlign: 'right' },
 
   // Driver card
-  driverCard:     { backgroundColor: '#fff', borderRadius: 18, marginHorizontal: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 14, borderWidth: 1, borderColor: '#F3F4F6' },
-  driverAvatar:   { width: 50, height: 50, borderRadius: 25, backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center' },
+  driverCard: {
+    backgroundColor: C.card, borderRadius: 16,
+    marginHorizontal: 16, padding: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    borderWidth: 1, borderColor: C.border,
+  },
+  driverCardSticky: {
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    backgroundColor: C.card, padding: 16,
+    flexDirection: 'row', alignItems: 'center', gap: 14,
+    borderTopWidth: 1, borderTopColor: C.border,
+    shadowColor: C.dark, shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08, shadowRadius: 12, elevation: 8,
+  },
+  driverAvatar:   { width: 48, height: 48, borderRadius: 24, backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center' },
   driverInitials: { fontSize: 16, fontWeight: '800', color: '#1D4ED8' },
-  driverName:     { fontSize: 15, fontWeight: '700', color: '#111827' },
-  driverVehicle:  { fontSize: 13, color: '#9CA3AF', marginTop: 2 },
-  callBtn:        { backgroundColor: '#22C55E', paddingHorizontal: 16, paddingVertical: 11, borderRadius: 12 },
+  driverName:     { fontSize: 15, fontWeight: '700', color: C.dark },
+  driverVehicle:  { fontSize: 12, color: C.textSecondary, marginTop: 2 },
+  callBtn:        { backgroundColor: C.green, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12 },
   callBtnText:    { color: '#fff', fontSize: 13, fontWeight: '700' },
+  callBtnLarge:   { backgroundColor: C.green, paddingHorizontal: 20, paddingVertical: 13, borderRadius: 14 },
+  callBtnLargeText:{ color: '#fff', fontSize: 14, fontWeight: '800' },
 })
 
-// ─── Styles RatingModal ───────────────────────────────────────────────────────
+// ─── RatingModal styles ───────────────────────────────────────────────────────
 const rStyles = StyleSheet.create({
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    zIndex: 100,
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingBottom: 24,
+    backgroundColor: 'rgba(26,26,46,0.5)',
+    zIndex: 100, justifyContent: 'flex-end',
   },
-  modal:       { backgroundColor: '#fff', borderRadius: 24, width: '100%', overflow: 'hidden' },
-  modalHeader: { backgroundColor: '#2563EB', paddingHorizontal: 24, paddingVertical: 20, alignItems: 'center' },
-  modalTitle:  { color: '#fff', fontSize: 16, fontWeight: '800' },
-  modalSub:    { color: 'rgba(255,255,255,0.8)', fontSize: 13, marginTop: 4, textAlign: 'center' },
+  modal:       { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingBottom: 40 },
+  modalHandle: { width: 36, height: 4, backgroundColor: C.border, borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 8 },
+  modalHeader: { paddingHorizontal: 24, paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: C.border },
+  modalTitle:  { fontSize: 18, fontWeight: '900', color: C.dark, marginBottom: 4 },
+  modalSub:    { fontSize: 13, color: C.textSecondary },
   modalBody:   { padding: 24 },
 
-  starsRow:    { flexDirection: 'row', justifyContent: 'center', gap: 8, marginBottom: 8 },
+  starsRow:    { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 10 },
   starBtn:     { padding: 4 },
-  starText:    { fontSize: 40 },
+  starText:    { fontSize: 38 },
   ratingLabel: { textAlign: 'center', fontSize: 14, fontWeight: '700', color: '#D97706', marginBottom: 18 },
 
   commentInput: {
-    borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14,
+    borderWidth: 1.5, borderColor: C.border, borderRadius: 14,
     paddingHorizontal: 14, paddingVertical: 12,
-    fontSize: 14, color: '#111827',
+    fontSize: 14, color: C.dark,
     minHeight: 80, marginBottom: 16,
   },
-  errorText: { color: '#DC2626', fontSize: 13, marginBottom: 12 },
+  errorText: { color: C.red, fontSize: 13, marginBottom: 12, fontWeight: '600' },
 
   modalBtns:     { flexDirection: 'row', gap: 12 },
-  cancelBtn:     { flex: 1, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
-  cancelBtnText: { fontSize: 14, fontWeight: '600', color: '#6B7280' },
-  submitBtn:     { flex: 1, backgroundColor: '#2563EB', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  cancelBtn:     { flex: 1, borderWidth: 1.5, borderColor: C.border, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  cancelBtnText: { fontSize: 14, fontWeight: '600', color: C.textSecondary },
+  submitBtn:     { flex: 1, backgroundColor: C.brand, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
   submitBtnText: { fontSize: 14, fontWeight: '800', color: '#fff' },
 })

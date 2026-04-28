@@ -1,17 +1,30 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, Image, StyleSheet,
-  Dimensions, Animated, FlatList, ActivityIndicator, RefreshControl
+  Dimensions, Animated, FlatList, ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { reviewsApi } from '../api/reviewsApi';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
+// ─── Palette ─────────────────────────────────────────────────────────────────
+const C = {
+  brand:    '#FF6B35',
+  dark:     '#1A1A2E',
+  bg:       '#F7F8FA',
+  card:     '#FFFFFF',
+  border:   '#EDEEF2',
+  textPrimary:   '#1A1A2E',
+  textSecondary: '#8A8FA8',
+  textMuted:     '#B5B9CC',
+  green:    '#00B14F',
+}
 
 const SERVICES = [
   {
-    title: 'Café & Boissons',
+    title: 'Cafe & Boissons',
     desc: 'Boissons chaudes & froides',
     img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&q=80',
   },
@@ -27,19 +40,19 @@ const SERVICES = [
   },
   {
     title: 'Pharmacie',
-    desc: 'Médicaments & soins',
+    desc: 'Medicaments & soins',
     img: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=800&q=80',
   },
 ];
 
 const STEPS = [
-  { n: '01', title: 'Choisissez', desc: 'Parcourez le catalogue et sélectionnez vos articles.' },
+  { n: '01', title: 'Choisissez', desc: 'Parcourez le catalogue et selectionnez vos articles.' },
   { n: '02', title: 'Commandez', desc: 'Indiquez votre adresse et confirmez en un clic.' },
   { n: '03', title: 'Suivez', desc: 'Regardez votre livreur arriver sur la carte en direct.' },
-  { n: '04', title: 'Recevez', desc: 'Paiement à la livraison. Simple et sans stress.' },
+  { n: '04', title: 'Recevez', desc: 'Paiement a la livraison. Simple et sans stress.' },
 ];
 
-const AVATAR_COLORS = ['#1A1A18', '#C0392B', '#1A5276', '#1D6A3A', '#6F4E37', '#7B2D8B', '#B7770D'];
+const AVATAR_COLORS = [C.dark, '#C0392B', '#1A5276', '#1D6A3A', '#6F4E37', '#7B2D8B'];
 
 function getInitials(name) {
   if (!name || name === 'Client anonyme') return '?';
@@ -55,22 +68,21 @@ function getAvatarColor(name) {
 }
 
 function timeAgo(dateStr) {
-  if (!dateStr) return "Récemment";
+  if (!dateStr) return 'Recemment';
   const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
-  if (diff < 60) return "À l'instant";
+  if (diff < 60) return "A l'instant";
   if (diff < 3600) return `Il y a ${Math.floor(diff / 60)} min`;
   if (diff < 86400) return `Il y a ${Math.floor(diff / 3600)}h`;
   if (diff < 2592000) return `Il y a ${Math.floor(diff / 86400)}j`;
-  if (diff < 31536000) return `Il y a ${Math.floor(diff / 2592000)} mois`;
-  return `Il y a ${Math.floor(diff / 31536000)} an${Math.floor(diff / 31536000) > 1 ? 's' : ''}`;
+  return `Il y a ${Math.floor(diff / 2592000)} mois`;
 }
 
 function Stars({ rating, size = 16 }) {
-  const roundedRating = Math.round(rating || 0);
+  const r = Math.round(rating || 0);
   return (
     <View style={{ flexDirection: 'row', gap: 2 }}>
       {[1, 2, 3, 4, 5].map(i => (
-        <Text key={i} style={{ fontSize: size, color: i <= roundedRating ? '#F59E0B' : '#E5E7EB' }}>★</Text>
+        <Text key={i} style={{ fontSize: size, color: i <= r ? '#F59E0B' : C.border }}>★</Text>
       ))}
     </View>
   );
@@ -79,78 +91,50 @@ function Stars({ rating, size = 16 }) {
 export default function LandingPage() {
   const navigation = useNavigation();
   const [reviews, setReviews] = useState([]);
-  const [stats, setStats] = useState({
-    average: 0,
-    total: 0,
-    distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }
-  });
+  const [stats, setStats] = useState({ average: 0, total: 0, distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } });
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scrollY = useRef(new Animated.Value(0)).current;
+  const scrollY  = useRef(new Animated.Value(0)).current;
 
-  // Charger les avis et statistiques
   const fetchData = async () => {
     try {
       const [reviewsData, statsData] = await Promise.all([
         reviewsApi.getAllReviews(),
-        reviewsApi.getReviewsStats()
+        reviewsApi.getReviewsStats(),
       ]);
-      
       setStats(statsData);
-      // Dédoublonner par id avant de stocker
-      const seen = new Set()
-      const uniqueReviews = (reviewsData || []).filter(r => {
-        if (!r.id || seen.has(r.id)) return false
-        seen.add(r.id)
-        return true
-      })
-      setReviews(uniqueReviews);
-    } catch (error) {
-      console.error('Erreur chargement avis:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+      const seen = new Set();
+      const unique = (reviewsData || []).filter(r => {
+        if (!r.id || seen.has(r.id)) return false;
+        seen.add(r.id);
+        return true;
+      });
+      setReviews(unique);
+    } catch {}
+    finally { setLoading(false); setRefreshing(false); }
   };
 
-  // Rafraîchissement
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchData();
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchData();
-    }, [])
-  );
+  useFocusEffect(useCallback(() => { fetchData(); }, []));
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+    Animated.timing(fadeAnim, { toValue: 1, duration: 700, useNativeDriver: true }).start();
   }, []);
 
   const headerOpacity = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [0, 1],
-    extrapolate: 'clamp',
+    inputRange: [0, 100], outputRange: [0, 1], extrapolate: 'clamp',
   });
 
   const maxDist = Math.max(...Object.values(stats.distribution), 1);
 
   return (
     <View style={styles.container}>
-      {/* Header flottant */}
-      <Animated.View style={[styles.header, { backgroundColor: `rgba(250, 250, 248, ${headerOpacity})` }]}>
+
+      {/* Floating header */}
+      <Animated.View style={[styles.header, { backgroundColor: `rgba(247,248,250,${headerOpacity})` }]}>
         <View style={styles.headerContent}>
           <View style={styles.logo}>
-            <View style={styles.logoIcon}>
-              <Text style={styles.logoIconText}>🛵</Text>
-            </View>
+            <View style={styles.logoIcon}><View style={styles.logoIconDot} /></View>
             <Text style={styles.logoText}>DelivTrack</Text>
           </View>
           <TouchableOpacity style={styles.loginBtn} onPress={() => navigation.navigate('Login')}>
@@ -161,165 +145,152 @@ export default function LandingPage() {
 
       <Animated.ScrollView
         showsVerticalScrollIndicator={false}
-        onScroll={Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], { useNativeDriver: false })}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
         scrollEventThrottle={16}
         style={{ opacity: fadeAnim }}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#2563EB']} />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); fetchData(); }} colors={[C.brand]} />
         }
       >
-        {/* Hero Section */}
+
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
         <View style={styles.hero}>
           <View style={styles.badge}>
             <View style={styles.badgeDot} />
-            <Text style={styles.badgeText}>Disponible à Marrakech</Text>
+            <Text style={styles.badgeText}>Disponible a Marrakech</Text>
           </View>
           <Text style={styles.heroTitle}>
             Livraison rapide,{' '}
-            <Text style={styles.heroTitleAccent}>suivi en direct.</Text>
+            <Text style={styles.heroAccent}>suivi en direct.</Text>
           </Text>
-          <Text style={styles.heroSubtitle}>
-            Café, restaurants, pharmacie, shopping — tout ce dont vous avez besoin, livré chez vous en moins de 30 minutes.
+          <Text style={styles.heroSub}>
+            Cafe, restaurants, pharmacie, shopping — tout ce dont vous avez besoin, livre chez vous en moins de 30 minutes.
           </Text>
-          <View style={styles.heroButtons}>
+          <View style={styles.heroBtns}>
             <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.btnPrimaryText}>Commander maintenant</Text>
+              <Text style={styles.btnPrimaryTxt}>Commander maintenant</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.btnSecondaryText}>J'ai déjà un compte</Text>
+              <Text style={styles.btnSecondaryTxt}>Se connecter</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.features}>
-            {[
-              { icon: '', label: 'Livraison 30 min' },
-              { icon: '', label: 'Suivi GPS live' },
-              { icon: '', label: 'Paiement à la livraison' },
-            ].map((item, idx) => (
-              <View key={idx} style={styles.featureItem}>
-                <Text style={styles.featureIcon}>{item.icon}</Text>
-                <Text style={styles.featureLabel}>{item.label}</Text>
+            {['Livraison 30 min', 'Suivi GPS live', 'Paiement a la livraison'].map((f, i) => (
+              <View key={i} style={styles.featureItem}>
+                <View style={styles.featureDot} />
+                <Text style={styles.featureLabel}>{f}</Text>
               </View>
             ))}
           </View>
         </View>
 
-        {/* Stats Section avec les vrais stats */}
+        {/* ── Stats ────────────────────────────────────────────────────── */}
         <View style={styles.statsSection}>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.total > 0 ? stats.total : '0'}+</Text>
-            <Text style={styles.statLabel}>Commandes livrées</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>
-              {stats.total > 0 ? Math.round((stats.average / 5) * 100) : 98}%
-            </Text>
-            <Text style={styles.statLabel}>Clients satisfaits</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>25 min</Text>
-            <Text style={styles.statLabel}>Délai moyen</Text>
-          </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{stats.average > 0 ? stats.average.toFixed(1) : '4.8'}/5</Text>
-            <Text style={styles.statLabel}>Note moyenne</Text>
-          </View>
+          {[
+            { val: `${stats.total > 0 ? stats.total : '0'}+`, label: 'Commandes livrees' },
+            { val: `${stats.total > 0 ? Math.round((stats.average / 5) * 100) : 98}%`, label: 'Clients satisfaits' },
+            { val: '25 min', label: 'Delai moyen' },
+            { val: `${stats.average > 0 ? stats.average.toFixed(1) : '4.8'}/5`, label: 'Note moyenne' },
+          ].map((item, i) => (
+            <View key={i} style={styles.statItem}>
+              <Text style={styles.statValue}>{item.val}</Text>
+              <Text style={styles.statLabel}>{item.label}</Text>
+            </View>
+          ))}
         </View>
 
-        {/* Services Section */}
+        {/* ── Services ─────────────────────────────────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.tag}>NOS SERVICES</Text>
-            <Text style={styles.sectionTitle}>
-              Tout ce que vous aimez,{'\n'}livré à votre porte
-            </Text>
-            <Text style={styles.sectionSubtitle}>
-              4 catégories, des dizaines d'articles, une seule application.
-            </Text>
+            <View style={styles.tag}><Text style={styles.tagTxt}>NOS SERVICES</Text></View>
+            <Text style={styles.sectionTitle}>Tout ce que vous aimez,{'\n'}livre a votre porte</Text>
+            <Text style={styles.sectionSub}>4 categories, des dizaines d'articles, une seule application.</Text>
           </View>
-
           <View style={styles.servicesGrid}>
-            {SERVICES.map((service, idx) => (
-              <TouchableOpacity key={idx} style={styles.serviceCard} activeOpacity={0.9}>
-                <Image source={{ uri: service.img, cache: 'force-cache' }} style={styles.serviceImage} />
+            {SERVICES.map((svc, i) => (
+              <TouchableOpacity key={i} style={styles.serviceCard} activeOpacity={0.9}>
+                <Image source={{ uri: svc.img, cache: 'force-cache' }} style={styles.serviceImg} />
                 <LinearGradient
-                  colors={['transparent', 'rgba(0,0,0,0.8)']}
+                  colors={['transparent', 'rgba(26,26,46,0.85)']}
                   style={styles.serviceOverlay}
                 />
                 <View style={styles.serviceText}>
-                  <Text style={styles.serviceTitle}>{service.title}</Text>
-                  <Text style={styles.serviceDesc}>{service.desc}</Text>
+                  <Text style={styles.serviceTitle}>{svc.title}</Text>
+                  <Text style={styles.serviceDesc}>{svc.desc}</Text>
                 </View>
               </TouchableOpacity>
             ))}
           </View>
         </View>
 
-        {/* How it works Section */}
+        {/* ── How it works ─────────────────────────────────────────────── */}
         <View style={[styles.section, styles.howSection]}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.tag}>COMMENT ÇA MARCHE</Text>
-            <Text style={styles.sectionTitle}>4 étapes, c'est tout.</Text>
+            <View style={styles.tag}><Text style={styles.tagTxt}>COMMENT CA MARCHE</Text></View>
+            <Text style={styles.sectionTitle}>4 etapes, c'est tout.</Text>
           </View>
-
           <View style={styles.stepsContainer}>
-            {STEPS.map((step, idx) => (
-              <View key={idx} style={styles.stepItem}>
+            {STEPS.map((step, i) => (
+              <View key={i} style={styles.stepItem}>
                 <View style={styles.stepNumber}>
-                  <Text style={styles.stepNumberText}>{step.n}</Text>
+                  <Text style={styles.stepNumberTxt}>{step.n}</Text>
                 </View>
                 <Text style={styles.stepTitle}>{step.title}</Text>
                 <Text style={styles.stepDesc}>{step.desc}</Text>
               </View>
             ))}
           </View>
-
           <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.btnPrimaryText}>Essayer gratuitement</Text>
+            <Text style={styles.btnPrimaryTxt}>Essayer gratuitement</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Reviews Section - AVEC VRAIS AVIS */}
+        {/* ── Reviews ──────────────────────────────────────────────────── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.tag}>AVIS CLIENTS</Text>
+            <View style={styles.tag}><Text style={styles.tagTxt}>AVIS CLIENTS</Text></View>
             <Text style={styles.sectionTitle}>Ce que disent nos clients</Text>
           </View>
 
-          {/* Widget de note moyenne */}
+          {/* Rating widget */}
           <View style={styles.ratingWidget}>
-            <View style={styles.ratingWidgetLeft}>
-              <Text style={styles.ratingWidgetScore}>
+            <View style={styles.ratingLeft}>
+              <Text style={styles.ratingScore}>
                 {stats.average > 0 ? stats.average.toFixed(1) : '4.8'}
               </Text>
               <Stars rating={stats.average || 4.8} size={14} />
-              <Text style={styles.ratingWidgetCount}>
-                {stats.total > 0 ? `${stats.total} avis vérifiés` : 'Aucun avis'}
+              <Text style={styles.ratingCount}>
+                {stats.total > 0 ? `${stats.total} avis verifies` : 'Aucun avis'}
               </Text>
             </View>
-            <View style={styles.ratingWidgetBars}>
+            <View style={styles.ratingBars}>
               {[5, 4, 3, 2, 1].map(n => (
-                <View key={n} style={styles.ratingBarRow}>
-                  <Text style={styles.ratingBarLabel}>{n}</Text>
-                  <View style={styles.ratingBarBg}>
-                    <View style={[styles.ratingBarFill, { width: `${stats.total > 0 ? (stats.distribution[n] / maxDist) * 100 : 0}%` }]} />
+                <View key={n} style={styles.barRow}>
+                  <Text style={styles.barLabel}>{n}</Text>
+                  <View style={styles.barBg}>
+                    <View style={[
+                      styles.barFill,
+                      { width: `${stats.total > 0 ? (stats.distribution[n] / maxDist) * 100 : 0}%` }
+                    ]} />
                   </View>
-                  <Text style={styles.ratingBarCount}>{stats.distribution[n] || 0}</Text>
+                  <Text style={styles.barCount}>{stats.distribution[n] || 0}</Text>
                 </View>
               ))}
             </View>
           </View>
 
           {loading ? (
-            <ActivityIndicator size="large" color="#1A1A18" style={{ marginTop: 40 }} />
+            <ActivityIndicator size="large" color={C.brand} style={{ marginTop: 40 }} />
           ) : reviews.length === 0 ? (
             <View style={styles.emptyReviews}>
-              <Text style={styles.emptyEmoji}>💬</Text>
-              <Text style={styles.emptyReviewsTitle}>Aucun avis pour le moment</Text>
-              <Text style={styles.emptyReviewsText}>
-                Les avis apparaîtront ici après les premières livraisons.
-              </Text>
+              <View style={styles.emptyCircle} />
+              <Text style={styles.emptyTitle}>Aucun avis pour le moment</Text>
+              <Text style={styles.emptyText}>Les avis apparaitront ici apres les premieres livraisons.</Text>
               <TouchableOpacity style={styles.btnPrimary} onPress={() => navigation.navigate('Register')}>
-                <Text style={styles.btnPrimaryText}>Commander maintenant</Text>
+                <Text style={styles.btnPrimaryTxt}>Commander maintenant</Text>
               </TouchableOpacity>
             </View>
           ) : (
@@ -332,50 +303,41 @@ export default function LandingPage() {
                 <View style={styles.reviewCard}>
                   <View style={styles.reviewHeader}>
                     <View style={[styles.avatar, { backgroundColor: getAvatarColor(item.clientName || 'Client') }]}>
-                      <Text style={styles.avatarText}>
-                        {getInitials(item.clientName)}
-                      </Text>
+                      <Text style={styles.avatarTxt}>{getInitials(item.clientName)}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.reviewName}>
-                        {item.clientName || 'Client'}
-                      </Text>
+                      <Text style={styles.reviewName}>{item.clientName || 'Client'}</Text>
                       <Text style={styles.reviewCity}>{item.city || 'Marrakech'}</Text>
                     </View>
-                    <Text style={styles.reviewDate}>
-                      {timeAgo(item.date || item.createdAt)}
-                    </Text>
+                    <Text style={styles.reviewDate}>{timeAgo(item.date || item.createdAt)}</Text>
                   </View>
-                  <Stars rating={item.rating || 5} size={14} />
+                  <Stars rating={item.rating || 5} size={13} />
                   <Text style={styles.reviewComment}>
                     "{item.comment || item.ratingComment || 'Service excellent !'}"
                   </Text>
                   <View style={styles.verifiedBadge}>
-                    <Text style={styles.verifiedIcon}>✓</Text>
-                    <Text style={styles.verifiedText}>Commande vérifiée</Text>
+                    <View style={styles.verifiedDot} />
+                    <Text style={styles.verifiedTxt}>Commande verifiee</Text>
                   </View>
                 </View>
               )}
-              contentContainerStyle={{ gap: 16, paddingHorizontal: 16 }}
+              contentContainerStyle={{ gap: 14, paddingHorizontal: 16 }}
             />
           )}
         </View>
 
-        {/* CTA Section */}
-        <LinearGradient
-          colors={['#1A1A18', '#2A2A28']}
-          style={styles.ctaSection}
-        >
-          <Text style={styles.ctaTitle}>Prêt à commander ?</Text>
-          <Text style={styles.ctaSubtitle}>
-            Rejoignez des milliers de clients satisfaits à Marrakech. Inscription gratuite, livraison en 30 minutes.
+        {/* ── CTA ──────────────────────────────────────────────────────── */}
+        <LinearGradient colors={[C.dark, '#0F0F1E']} style={styles.ctaSection}>
+          <Text style={styles.ctaTitle}>Pret a commander ?</Text>
+          <Text style={styles.ctaSub}>
+            Rejoignez des milliers de clients satisfaits a Marrakech. Inscription gratuite, livraison en 30 minutes.
           </Text>
-          <View style={styles.ctaButtons}>
-            <TouchableOpacity style={styles.btnLight} onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.btnLightText}>Créer un compte gratuit</Text>
+          <View style={styles.ctaBtns}>
+            <TouchableOpacity style={styles.ctaBtnLight} onPress={() => navigation.navigate('Register')}>
+              <Text style={styles.ctaBtnLightTxt}>Creer un compte gratuit</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.btnOutline} onPress={() => navigation.navigate('Login')}>
-              <Text style={styles.btnOutlineText}>Se connecter</Text>
+            <TouchableOpacity style={styles.ctaBtnOutline} onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.ctaBtnOutlineTxt}>Se connecter</Text>
             </TouchableOpacity>
           </View>
         </LinearGradient>
@@ -384,124 +346,176 @@ export default function LandingPage() {
         <View style={styles.footer}>
           <View style={styles.footerContent}>
             <View style={styles.footerLogo}>
-              <View style={styles.footerLogoIcon}>
-                <Text>🛵</Text>
-              </View>
-              <Text style={styles.footerLogoText}>DelivTrack</Text>
+              <View style={styles.footerLogoIcon}><View style={styles.footerLogoDot} /></View>
+              <Text style={styles.footerLogoTxt}>DelivTrack</Text>
             </View>
             <Text style={styles.copyright}>© 2025 DelivTrack</Text>
           </View>
         </View>
+
       </Animated.ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAF8' },
+  container: { flex: 1, backgroundColor: C.bg },
+
+  // Header
   header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10,
-    paddingTop: 50,
-    paddingBottom: 12,
-    paddingHorizontal: 20,
-    borderBottomWidth: 0.5,
-    borderBottomColor: '#EBEBE6',
+    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10,
+    paddingTop: 50, paddingBottom: 12, paddingHorizontal: 20,
+    borderBottomWidth: 1, borderBottomColor: C.border,
   },
   headerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  logo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logoIcon: { width: 32, height: 32, backgroundColor: '#1A1A18', borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  logoIconText: { fontSize: 16 },
-  logoText: { fontSize: 18, fontWeight: '800', color: '#1A1A18' },
-  loginBtn: { paddingVertical: 9, paddingHorizontal: 20, borderRadius: 14, borderWidth: 1.5, borderColor: '#D0D0C8' },
-  loginBtnText: { fontSize: 14, fontWeight: '500', color: '#1A1A18' },
-  hero: { padding: 24, paddingTop: 120 },
-  badge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F0F4FF', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 100, alignSelf: 'flex-start', marginBottom: 16, gap: 6 },
-  badgeDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' },
-  badgeText: { fontSize: 12, fontWeight: '600', color: '#1A3A8F' },
-  heroTitle: { fontSize: 40, fontWeight: '800', lineHeight: 46, color: '#1A1A18', marginBottom: 16 },
-  heroTitleAccent: { color: '#C0392B' },
-  heroSubtitle: { fontSize: 16, color: '#666', lineHeight: 24, marginBottom: 24 },
-  heroButtons: { flexDirection: 'row', gap: 12, marginBottom: 24 },
-  btnPrimary: { backgroundColor: '#1A1A18', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 24, flex: 1, alignItems: 'center' },
-  btnPrimaryText: { color: '#FAFAF8', fontSize: 15, fontWeight: '600' },
-  btnSecondary: { borderRadius: 14, paddingVertical: 13, paddingHorizontal: 20, borderWidth: 1.5, borderColor: '#D0D0C8', flex: 1, alignItems: 'center' },
-  btnSecondaryText: { fontSize: 15, fontWeight: '500', color: '#1A1A18' },
-  features: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  featureItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  featureIcon: { fontSize: 14 },
-  featureLabel: { fontSize: 13, fontWeight: '500', color: '#555' },
-  statsSection: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-around', backgroundColor: '#1A1A18', paddingVertical: 40, paddingHorizontal: 20, marginVertical: 20 },
-  statItem: { alignItems: 'center', minWidth: 80 },
-  statValue: { fontSize: 28, fontWeight: '800', color: '#FAFAF8' },
-  statLabel: { fontSize: 12, color: '#888', marginTop: 8 },
-  section: { padding: 24 },
-  sectionHeader: { alignItems: 'center', marginBottom: 32 },
-  tag: { backgroundColor: '#F4F4F0', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8, fontSize: 11, fontWeight: '600', color: '#555', marginBottom: 16 },
-  sectionTitle: { fontSize: 32, fontWeight: '800', textAlign: 'center', color: '#1A1A18', marginBottom: 12 },
-  sectionSubtitle: { fontSize: 15, color: '#777', textAlign: 'center' },
-  servicesGrid: { gap: 16 },
-  serviceCard: { height: 180, borderRadius: 20, overflow: 'hidden', position: 'relative' },
-  serviceImage: { width: '100%', height: '100%' },
-  serviceOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 100 },
-  serviceText: { position: 'absolute', bottom: 16, left: 16, right: 16 },
-  serviceTitle: { fontSize: 18, fontWeight: '700', color: '#fff' },
-  serviceDesc: { fontSize: 12, color: 'rgba(255,255,255,0.8)' },
-  howSection: { backgroundColor: '#F4F4F0', marginVertical: 10 },
-  stepsContainer: { gap: 24, marginBottom: 32 },
-  stepItem: { alignItems: 'center' },
-  stepNumber: { width: 48, height: 48, borderRadius: 24, backgroundColor: '#1A1A18', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
-  stepNumberText: { fontSize: 14, fontWeight: '700', color: '#fff' },
-  stepTitle: { fontSize: 18, fontWeight: '700', marginBottom: 6 },
-  stepDesc: { fontSize: 12, color: '#777', textAlign: 'center', paddingHorizontal: 16 },
-  ratingWidget: { flexDirection: 'row', backgroundColor: '#F4F4F0', borderRadius: 20, padding: 20, marginBottom: 24, gap: 20 },
-  ratingWidgetLeft: { alignItems: 'center', minWidth: 100 },
-  ratingWidgetScore: { fontSize: 48, fontWeight: '800', color: '#1A1A18' },
-  ratingWidgetCount: { fontSize: 11, color: '#888', marginTop: 6 },
-  ratingWidgetBars: { flex: 1, gap: 8 },
-  ratingBarRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingBarLabel: { width: 20, fontSize: 12, color: '#666', fontWeight: '600' },
-  ratingBarBg: { flex: 1, height: 6, backgroundColor: '#E5E7EB', borderRadius: 3, overflow: 'hidden' },
-  ratingBarFill: { height: '100%', backgroundColor: '#F59E0B', borderRadius: 3 },
-  ratingBarCount: { width: 25, fontSize: 11, color: '#888', textAlign: 'right' },
-  reviewCard: {
-    width: 280,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 20,
-    marginRight: 16,
-    borderWidth: 1,
-    borderColor: '#EBEBE6',
+  logo:          { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logoIcon:      {
+    width: 32, height: 32, backgroundColor: C.brand,
+    borderRadius: 9, alignItems: 'center', justifyContent: 'center',
   },
-  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 12 },
-  avatar: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { fontSize: 14, fontWeight: '600', color: '#fff' },
-  reviewName: { fontSize: 14, fontWeight: '600', color: '#1A1A18', flex: 1 },
-  reviewCity: { fontSize: 11, color: '#999' },
-  reviewDate: { fontSize: 10, color: '#CCC' },
-  reviewComment: { fontSize: 13, color: '#555', lineHeight: 20, marginVertical: 8 },
-  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 8 },
-  verifiedIcon: { fontSize: 12, color: '#22C55E' },
-  verifiedText: { fontSize: 11, color: '#999' },
-  emptyReviews: { alignItems: 'center', padding: 40 },
-  emptyEmoji: { fontSize: 52, marginBottom: 16 },
-  emptyReviewsTitle: { fontSize: 20, fontWeight: '700', color: '#555', marginBottom: 10 },
-  emptyReviewsText: { fontSize: 14, color: '#999', textAlign: 'center', marginBottom: 24 },
-  ctaSection: { padding: 40, alignItems: 'center', marginVertical: 20 },
-  ctaTitle: { fontSize: 28, fontWeight: '800', color: '#fff', marginBottom: 12, textAlign: 'center' },
-  ctaSubtitle: { fontSize: 14, color: '#aaa', textAlign: 'center', marginBottom: 24, lineHeight: 20 },
-  ctaButtons: { gap: 12, width: '100%' },
-  btnLight: { backgroundColor: '#FAFAF8', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
-  btnLightText: { fontSize: 15, fontWeight: '700', color: '#1A1A18' },
-  btnOutline: { borderRadius: 14, paddingVertical: 13, alignItems: 'center', borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.3)' },
-  btnOutlineText: { fontSize: 15, fontWeight: '500', color: '#FAFAF8' },
-  footer: { padding: 20, borderTopWidth: 1, borderTopColor: '#EBEBE6' },
+  logoIconDot:   { width: 12, height: 12, borderRadius: 6, backgroundColor: 'rgba(255,255,255,0.9)' },
+  logoText:      { fontSize: 18, fontWeight: '800', color: C.dark },
+  loginBtn:      { paddingVertical: 9, paddingHorizontal: 18, borderRadius: 12, borderWidth: 1.5, borderColor: C.border },
+  loginBtnText:  { fontSize: 14, fontWeight: '600', color: C.dark },
+
+  // Hero
+  hero: { padding: 24, paddingTop: 120 },
+  badge: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    backgroundColor: '#E8FBF0',
+    paddingHorizontal: 14, paddingVertical: 7,
+    borderRadius: 100, alignSelf: 'flex-start', marginBottom: 18,
+  },
+  badgeDot:  { width: 7, height: 7, borderRadius: 4, backgroundColor: C.green },
+  badgeText: { fontSize: 12, fontWeight: '700', color: '#1D6A3A' },
+  heroTitle: { fontSize: 38, fontWeight: '900', lineHeight: 44, color: C.dark, marginBottom: 14, letterSpacing: -1 },
+  heroAccent:{ color: C.brand },
+  heroSub:   { fontSize: 15, color: C.textSecondary, lineHeight: 23, marginBottom: 24 },
+  heroBtns:  { flexDirection: 'row', gap: 12, marginBottom: 24 },
+
+  btnPrimary: {
+    backgroundColor: C.brand, borderRadius: 14,
+    paddingVertical: 15, paddingHorizontal: 24,
+    flex: 1, alignItems: 'center',
+  },
+  btnPrimaryTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
+  btnSecondary: {
+    borderRadius: 14, paddingVertical: 14, paddingHorizontal: 20,
+    borderWidth: 1.5, borderColor: C.border,
+    flex: 1, alignItems: 'center',
+    backgroundColor: C.card,
+  },
+  btnSecondaryTxt: { fontSize: 15, fontWeight: '600', color: C.dark },
+
+  features:     { flexDirection: 'row', flexWrap: 'wrap', gap: 14 },
+  featureItem:  { flexDirection: 'row', alignItems: 'center', gap: 7 },
+  featureDot:   { width: 7, height: 7, borderRadius: 4, backgroundColor: C.brand },
+  featureLabel: { fontSize: 12, fontWeight: '600', color: C.textSecondary },
+
+  // Stats
+  statsSection: {
+    flexDirection: 'row', flexWrap: 'wrap',
+    justifyContent: 'space-around',
+    backgroundColor: C.dark,
+    paddingVertical: 36, paddingHorizontal: 16,
+    marginVertical: 20,
+  },
+  statItem:  { alignItems: 'center', minWidth: 80 },
+  statValue: { fontSize: 26, fontWeight: '900', color: '#fff', letterSpacing: -0.5 },
+  statLabel: { fontSize: 11, color: 'rgba(255,255,255,0.45)', marginTop: 6, fontWeight: '600' },
+
+  // Section
+  section:       { padding: 24 },
+  sectionHeader: { alignItems: 'center', marginBottom: 28 },
+  tag:           {
+    backgroundColor: '#F0F1F8',
+    paddingHorizontal: 12, paddingVertical: 5,
+    borderRadius: 8, marginBottom: 14,
+  },
+  tagTxt:      { fontSize: 10, fontWeight: '800', color: C.textSecondary, letterSpacing: 1 },
+  sectionTitle:{ fontSize: 30, fontWeight: '900', textAlign: 'center', color: C.dark, marginBottom: 10, letterSpacing: -0.5 },
+  sectionSub:  { fontSize: 14, color: C.textSecondary, textAlign: 'center', lineHeight: 20 },
+
+  // Services
+  servicesGrid: { gap: 14 },
+  serviceCard:  { height: 180, borderRadius: 20, overflow: 'hidden' },
+  serviceImg:   { width: '100%', height: '100%' },
+  serviceOverlay: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 110 },
+  serviceText:  { position: 'absolute', bottom: 16, left: 16, right: 16 },
+  serviceTitle: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
+  serviceDesc:  { fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 2 },
+
+  // How it works
+  howSection:      { backgroundColor: '#F0F1F8', marginVertical: 10 },
+  stepsContainer:  { gap: 22, marginBottom: 32 },
+  stepItem:        { alignItems: 'center' },
+  stepNumber:      {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: C.brand,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+  },
+  stepNumberTxt:   { fontSize: 13, fontWeight: '800', color: '#fff' },
+  stepTitle:       { fontSize: 17, fontWeight: '800', color: C.dark, marginBottom: 5 },
+  stepDesc:        { fontSize: 13, color: C.textSecondary, textAlign: 'center', paddingHorizontal: 20, lineHeight: 19 },
+
+  // Rating widget
+  ratingWidget: {
+    flexDirection: 'row', backgroundColor: C.card,
+    borderRadius: 20, padding: 20, marginBottom: 24, gap: 20,
+    borderWidth: 1, borderColor: C.border,
+  },
+  ratingLeft:  { alignItems: 'center', minWidth: 90 },
+  ratingScore: { fontSize: 46, fontWeight: '900', color: C.dark, letterSpacing: -2 },
+  ratingCount: { fontSize: 11, color: C.textSecondary, marginTop: 6, textAlign: 'center' },
+  ratingBars:  { flex: 1, gap: 8 },
+  barRow:      { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  barLabel:    { width: 16, fontSize: 11, color: C.textSecondary, fontWeight: '700' },
+  barBg:       { flex: 1, height: 6, backgroundColor: C.border, borderRadius: 3, overflow: 'hidden' },
+  barFill:     { height: '100%', backgroundColor: '#F59E0B', borderRadius: 3 },
+  barCount:    { width: 22, fontSize: 10, color: C.textMuted, textAlign: 'right' },
+
+  // Reviews
+  reviewCard: {
+    width: 270, backgroundColor: C.card,
+    borderRadius: 20, padding: 18,
+    borderWidth: 1, borderColor: C.border,
+  },
+  reviewHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  avatar:       { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
+  avatarTxt:    { fontSize: 13, fontWeight: '700', color: '#fff' },
+  reviewName:   { fontSize: 13, fontWeight: '700', color: C.dark, flex: 1 },
+  reviewCity:   { fontSize: 11, color: C.textSecondary },
+  reviewDate:   { fontSize: 10, color: C.textMuted },
+  reviewComment:{ fontSize: 13, color: C.textSecondary, lineHeight: 19, marginVertical: 8, fontStyle: 'italic' },
+  verifiedBadge:{ flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 },
+  verifiedDot:  { width: 7, height: 7, borderRadius: 4, backgroundColor: C.green },
+  verifiedTxt:  { fontSize: 11, color: C.textSecondary, fontWeight: '600' },
+
+  // Empty reviews
+  emptyReviews: { alignItems: 'center', paddingVertical: 40, gap: 12 },
+  emptyCircle:  { width: 64, height: 64, borderRadius: 32, backgroundColor: C.border },
+  emptyTitle:   { fontSize: 18, fontWeight: '700', color: C.dark },
+  emptyText:    { fontSize: 13, color: C.textSecondary, textAlign: 'center', paddingHorizontal: 24 },
+
+  // CTA
+  ctaSection: { padding: 40, alignItems: 'center', marginVertical: 16 },
+  ctaTitle:   { fontSize: 28, fontWeight: '900', color: '#fff', marginBottom: 12, textAlign: 'center', letterSpacing: -0.5 },
+  ctaSub:     { fontSize: 14, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 28, lineHeight: 20 },
+  ctaBtns:    { gap: 12, width: '100%' },
+  ctaBtnLight: { backgroundColor: C.brand, borderRadius: 14, paddingVertical: 15, alignItems: 'center' },
+  ctaBtnLightTxt: { fontSize: 15, fontWeight: '800', color: '#fff' },
+  ctaBtnOutline: {
+    borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.2)',
+  },
+  ctaBtnOutlineTxt: { fontSize: 15, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
+
+  // Footer
+  footer:        { padding: 20, borderTopWidth: 1, borderTopColor: C.border },
   footerContent: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  footerLogo: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  footerLogoIcon: { width: 26, height: 26, backgroundColor: '#1A1A18', borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  footerLogoText: { fontSize: 14, fontWeight: '700' },
-  copyright: { fontSize: 12, color: '#999' },
+  footerLogo:    { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  footerLogoIcon:{ width: 26, height: 26, backgroundColor: C.brand, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
+  footerLogoDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: 'rgba(255,255,255,0.9)' },
+  footerLogoTxt: { fontSize: 14, fontWeight: '800', color: C.dark },
+  copyright:     { fontSize: 11, color: C.textSecondary },
 });

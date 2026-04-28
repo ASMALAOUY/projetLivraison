@@ -1,11 +1,23 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import useAuthStore from '../store/authStore'
 
+// ─── Palette ──────────────────────────────────────────────────────────────────
+const C = {
+  brand:    '#FF6B35',
+  dark:     '#1A1A2E',
+  bg:       '#F7F8FA',
+  card:     '#FFFFFF',
+  border:   '#EDEEF2',
+  textSecondary: '#8A8FA8',
+  green:    '#00B14F',
+  red:      '#EF4444',
+}
+
 const ROLE_LINKS = {
   manager: [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/map',       label: 'Carte live' },
-    { to: '/orders',    label: 'Tournées'   },
+    { to: '/orders',    label: 'Tournees'   },
     { to: '/drivers',   label: 'Livreurs'   },
   ],
   driver: [{ to: '/livreur', label: 'Mes livraisons' }],
@@ -13,16 +25,12 @@ const ROLE_LINKS = {
 }
 
 const ROLE_STYLES = {
-  manager: { background: '#FFFBEB', color: '#D97706', border: '1px solid #FEF3C7' },
-  driver:  { background: '#F0FDF4', color: '#16A34A', border: '1px solid #BBF7D0' },
-  client:  { background: '#FFFBEB', color: '#D97706', border: '1px solid #FEF3C7' },
+  manager: { background: 'rgba(255,107,53,0.12)', color: C.brand,   border: `1px solid rgba(255,107,53,0.25)` },
+  driver:  { background: 'rgba(0,177,79,0.12)',   color: C.green,   border: `1px solid rgba(0,177,79,0.25)` },
+  client:  { background: 'rgba(255,107,53,0.12)', color: C.brand,   border: `1px solid rgba(255,107,53,0.25)` },
 }
 
-const ROLE_LABELS = {
-  manager: 'Gestionnaire',
-  driver:  'Livreur',
-  client:  'Client',
-}
+const ROLE_LABELS = { manager: 'Gestionnaire', driver: 'Livreur', client: 'Client' }
 
 export default function Navbar() {
   const { user, role, logout } = useAuthStore()
@@ -36,39 +44,46 @@ export default function Navbar() {
 
   return (
     <nav style={{
-      background: '#1A1A18',
-      borderBottom: '1px solid rgba(245,158,11,0.15)',
+      background: C.dark,
+      borderBottom: `1px solid rgba(255,107,53,0.12)`,
       position: 'sticky', top: 0, zIndex: 40,
     }}>
       <div style={{
         maxWidth: 1100, margin: '0 auto',
-        padding: '0 20px',
+        padding: '0 24px',
         display: 'flex', alignItems: 'center',
         justifyContent: 'space-between',
-        height: 56,
+        height: 58,
       }}>
 
         {/* Logo + liens */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
-          <span style={{
-            fontWeight: 800, fontSize: 17, letterSpacing: '-0.3px',
-            color: '#F59E0B',
-          }}>
-            DelivTrack
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 32 }}>
+          {/* Logo */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 9,
+              background: C.brand,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{ width: 11, height: 11, borderRadius: 6, background: 'rgba(255,255,255,0.9)' }} />
+            </div>
+            <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.3px', color: '#fff' }}>
+              DelivTrack
+            </span>
+          </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {/* Nav links */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {links.map(l => {
               const isActive = location.pathname === l.to
               return (
                 <Link key={l.to} to={l.to} style={{
                   fontSize: 13, fontWeight: isActive ? 700 : 500,
-                  color: isActive ? '#F59E0B' : 'rgba(255,255,255,0.5)',
+                  color: isActive ? '#fff' : 'rgba(255,255,255,0.45)',
                   textDecoration: 'none',
-                  padding: '6px 12px',
+                  padding: '6px 14px',
                   borderRadius: 8,
-                  background: isActive ? 'rgba(245,158,11,0.12)' : 'transparent',
-                  borderBottom: isActive ? '2px solid #F59E0B' : '2px solid transparent',
+                  background: isActive ? C.brand : 'transparent',
                   transition: 'all .15s',
                 }}>
                   {l.label}
@@ -78,9 +93,9 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Droite : rôle + avatar + nom + déco */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Badge rôle */}
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          {/* Role badge */}
           <span style={{
             fontSize: 11, fontWeight: 700,
             padding: '4px 10px', borderRadius: 20,
@@ -92,53 +107,49 @@ export default function Navbar() {
           {/* Avatar */}
           <div style={{
             width: 34, height: 34, borderRadius: '50%',
-            background: '#F59E0B',
+            background: C.brand,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 12, fontWeight: 800, color: '#1A1A18',
+            fontSize: 12, fontWeight: 800, color: '#fff',
             flexShrink: 0,
           }}>
             {initials}
           </div>
 
-          {/* Nom */}
+          {/* Username */}
           <span style={{
             fontSize: 13, fontWeight: 600,
-            color: 'rgba(255,255,255,0.8)',
-            display: 'none',
-          }}
-            className="sm-show"
-          >
+            color: 'rgba(255,255,255,0.7)',
+          }}>
             {user?.name}
           </span>
 
-          {/* Bouton déconnexion */}
+          {/* Logout button */}
           <button
             onClick={() => { logout(); navigate('/login') }}
             style={{
               fontSize: 12, fontWeight: 600,
-              color: '#F87171',
-              background: 'rgba(248,113,113,0.1)',
-              border: '1px solid rgba(248,113,113,0.25)',
-              borderRadius: 8, padding: '6px 12px',
+              color: 'rgba(255,255,255,0.5)',
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 8, padding: '6px 14px',
               cursor: 'pointer', transition: 'all .15s',
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(248,113,113,0.2)'
-              e.currentTarget.style.borderColor = 'rgba(248,113,113,0.4)'
+              e.currentTarget.style.color = '#fff'
+              e.currentTarget.style.background = 'rgba(255,255,255,0.12)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(248,113,113,0.1)'
-              e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'
+              e.currentTarget.style.color = 'rgba(255,255,255,0.5)'
+              e.currentTarget.style.background = 'rgba(255,255,255,0.06)'
             }}
           >
-            Déconnexion
+            Deconnexion
           </button>
         </div>
       </div>
 
       <style>{`
-        @media (min-width: 640px) { .sm-show { display: block !important; } }
-        nav a:hover { color: #F59E0B !important; background: rgba(245,158,11,0.08) !important; }
+        nav a:hover { color: #fff !important; background: rgba(255,107,53,0.15) !important; }
       `}</style>
     </nav>
   )
