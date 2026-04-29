@@ -38,6 +38,12 @@ pfm/
 
 https://github.com/user-attachments/assets/0c25df3c-9e92-46b5-b99f-0de2c8adba53
 
+## demo  web
+
+
+https://github.com/user-attachments/assets/986df3a5-2c45-4bae-afaa-355475e9ee29
+
+
 
 ## Fonctionnalités
 
