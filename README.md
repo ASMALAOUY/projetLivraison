@@ -1,13 +1,32 @@
-# DelivTrack
-
-Plateforme de livraison urbaine complète développée dans le cadre d'un Projet de Fin d'Études (PFE). DelivTrack connecte clients, livreurs et gestionnaires autour d'une expérience de livraison en temps réel — inspirée de Glovo.
+<div align="center">
+  <img src="https://img.icons8.com/color/96/000000/delivery.png" width="80" height="80" alt="Logo DelivTrack"/>
+  <h1> DelivTrack</h1>
+  <p><strong>Plateforme de livraison urbaine complète — Connectez clients, livreurs et gestionnaires en temps réel</strong></p>
+  
+  [![Node.js](https://img.shields.io/badge/Node.js-18.x-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+  [![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)](https://expressjs.com/)
+  [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14.x-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+  [![React](https://img.shields.io/badge/React-18.x-61DAFB?logo=react&logoColor=white)](https://reactjs.org/)
+  [![React Native](https://img.shields.io/badge/React_Native-0.72-61DAFB?logo=react&logoColor=white)](https://reactnative.dev/)
+  [![Expo](https://img.shields.io/badge/Expo-49.x-000020?logo=expo&logoColor=white)](https://expo.dev/)
+  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+  
+  <p><i>Projet de Fin d'Études (PFE) - Marrakech, Maroc 2026</i></p>
+</div>
 
 ---
 
-## Architecture
+## À propos
+
+**DelivTrack** est une plateforme de livraison urbaine inspirée de **Glovo**, développée dans le cadre d'un Projet de Fin d'Études. Elle permet aux clients de passer des commandes, aux livreurs de les accepter et de suivre leurs tournées, et aux gestionnaires de superviser l'ensemble des opérations en temps réel.
+
+---
+
+##  Architecture
+
 
 ```
-pfe3/
+pfm/
 ├── delivery-backend/      API REST Node.js + Express + PostgreSQL
 ├── delivery-frontend/     Dashboard gestionnaire React.js
 └── delivery-mobile/       App mobile React Native (Expo) — Clients & Livreurs
