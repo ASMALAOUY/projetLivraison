@@ -1,5 +1,5 @@
 <div align="center">
- 
+  <img width="80" height="80" alt="ChatGPT Image 29 avr  2026, 12_51_02" src="https://github.com/user-attachments/assets/d39f5b07-a53e-47cd-9029-4d594b25e771" />
   <h1> DelivTrack</h1>
   <p><strong>Plateforme de livraison urbaine complète — Connectez clients, livreurs et gestionnaires en temps réel</strong></p>
   
