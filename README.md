@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://img.icons8.com/color/96/000000/delivery.png" width="80" height="80" alt="Logo DelivTrack"/>
+ 
   <h1> DelivTrack</h1>
   <p><strong>Plateforme de livraison urbaine complète — Connectez clients, livreurs et gestionnaires en temps réel</strong></p>
   
