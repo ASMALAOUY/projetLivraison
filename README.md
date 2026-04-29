@@ -33,6 +33,11 @@ pfm/
 ```
 
 ---
+## demo mobile :
+
+
+https://github.com/user-attachments/assets/0c25df3c-9e92-46b5-b99f-0de2c8adba53
+
 
 ## Fonctionnalités
 
