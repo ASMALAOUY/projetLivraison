@@ -100,14 +100,6 @@ cd delivery-mobile
 npm install
 ```
 
-Modifier `src/api/api.js` :
-
-```js
-// Remplacer localhost par l'IP locale de votre machine
-// Android émulateur : 10.0.2.2
-// Appareil physique  : 192.168.x.x (votre IP locale)
-const BASE_URL = 'http://192.168.x.x:3000/api';
-```
 
 Démarrer :
 
