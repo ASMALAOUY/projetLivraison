@@ -5,7 +5,7 @@ const { sequelize } = require('./models');
 const routes        = require('./routes');
 const errorHandler  = require('./middlewares/errorHandler');
 const bcrypt        = require('bcryptjs');
-const { User }      = require('./models');   // ← User, pas Driver
+const { User }      = require('./models');   
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -57,7 +57,7 @@ async function startServer() {
     await createDefaultDriver();
 
     //  '0.0.0.0' = écoute sur toutes les interfaces réseau
-    // Nécessaire pour que les appareils Android/iOS accèdent au serveur
+  
     app.listen(PORT, '0.0.0.0', () => {
       console.log(` Serveur sur http://0.0.0.0:${PORT}`);
       console.log(`Depuis mobile : http://192.168.8.114:${PORT}`);

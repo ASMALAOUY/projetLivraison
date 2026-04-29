@@ -53,9 +53,7 @@ DeliveryPoint.belongsTo(User, {
   constraints: false,
 });
 
-// ── TrackingLog → User (livreur) ───────────────────────────
-// ✅ CORRECTION : driverId dans tracking_logs = UUID de 'users' (pas 'drivers')
-// constraints: false empêche la recréation de la FK vers 'drivers'
+
 User.hasMany(TrackingLog, {
   foreignKey: 'driverId',
   as: 'TrackingLogs',

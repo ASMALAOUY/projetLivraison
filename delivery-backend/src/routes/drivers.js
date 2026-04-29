@@ -51,7 +51,7 @@ router.get('/available-orders', auth, async (req, res, next) => {
     const order = await DeliveryOrder.findByPk(point.orderId)
     if (!order) return res.status(404).json({ error: 'Tournée introuvable' })
 
-    // ✅ Stocker le driverId dans le point lui-même
+    //  Stocker le driverId dans le point lui-même
     await point.update({
       status: 'in_progress',
       driverAcceptedId: req.user.id,   // ← sauvegarde qui a accepté

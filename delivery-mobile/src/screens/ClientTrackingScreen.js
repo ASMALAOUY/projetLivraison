@@ -4,6 +4,7 @@ import {
   View, Text, ScrollView, FlatList, TouchableOpacity,
   StyleSheet, Image, TextInput, ActivityIndicator,
   Alert, Linking, RefreshControl,
+  KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard,
 } from 'react-native'
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps'
 import api from '../api/api'
@@ -113,57 +114,86 @@ function RatingModal({ pointId, driverName, onClose, onSubmit }) {
   }
 
   return (
-    <View style={rStyles.overlay}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={rStyles.overlay}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={rStyles.overlayBg} />
+      </TouchableWithoutFeedback>
+
       <View style={rStyles.modal}>
         <View style={rStyles.modalHandle} />
-        <View style={rStyles.modalHeader}>
-          <Text style={rStyles.modalTitle}>Evaluer la livraison</Text>
-          <Text style={rStyles.modalSub}>
-            Comment s'est passee votre livraison avec {driverName} ?
-          </Text>
-        </View>
 
-        <View style={rStyles.modalBody}>
-          <View style={rStyles.starsRow}>
-            {[1, 2, 3, 4, 5].map(star => (
-              <TouchableOpacity key={star} onPress={() => setRating(star)} style={rStyles.starBtn} activeOpacity={0.7}>
-                <Text style={[rStyles.starText, { color: star <= rating ? '#F59E0B' : C.border }]}>★</Text>
+        <ScrollView
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <View style={rStyles.modalHeader}>
+            <Text style={rStyles.modalTitle}>Evaluer la livraison</Text>
+            <Text style={rStyles.modalSub}>
+              Comment s'est passee votre livraison avec {driverName} ?
+            </Text>
+          </View>
+
+          <View style={rStyles.modalBody}>
+            {/* Etoiles */}
+            <View style={rStyles.starsRow}>
+              {[1, 2, 3, 4, 5].map(star => (
+                <TouchableOpacity
+                  key={star}
+                  onPress={() => setRating(star)}
+                  style={rStyles.starBtn}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[rStyles.starText, { color: star <= rating ? '#F59E0B' : C.border }]}>
+                    ★
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {rating > 0 && (
+              <Text style={rStyles.ratingLabel}>{labels[rating]}</Text>
+            )}
+
+            {/* Champ commentaire — toujours visible au-dessus du clavier */}
+            <Text style={rStyles.commentLabel}>COMMENTAIRE (OPTIONNEL)</Text>
+            <TextInput
+              style={rStyles.commentInput}
+              value={comment}
+              onChangeText={setComment}
+              placeholder="Decrivez votre experience..."
+              placeholderTextColor={C.textSecondary}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              returnKeyType="done"
+              blurOnSubmit
+            />
+
+            {!!error && <Text style={rStyles.errorText}>{error}</Text>}
+
+            <View style={rStyles.modalBtns}>
+              <TouchableOpacity style={rStyles.cancelBtn} onPress={onClose}>
+                <Text style={rStyles.cancelBtnText}>Plus tard</Text>
               </TouchableOpacity>
-            ))}
+              <TouchableOpacity
+                style={[rStyles.submitBtn, (!rating || loading) && { opacity: 0.4 }]}
+                onPress={handleSubmit}
+                disabled={!rating || loading}
+              >
+                {loading
+                  ? <ActivityIndicator color="#fff" size="small" />
+                  : <Text style={rStyles.submitBtnText}>Envoyer</Text>
+                }
+              </TouchableOpacity>
+            </View>
           </View>
-          {rating > 0 && <Text style={rStyles.ratingLabel}>{labels[rating]}</Text>}
-
-          <TextInput
-            style={rStyles.commentInput}
-            value={comment}
-            onChangeText={setComment}
-            placeholder="Laissez un commentaire (optionnel)..."
-            placeholderTextColor={C.textSecondary}
-            multiline
-            numberOfLines={3}
-            textAlignVertical="top"
-          />
-
-          {!!error && <Text style={rStyles.errorText}>{error}</Text>}
-
-          <View style={rStyles.modalBtns}>
-            <TouchableOpacity style={rStyles.cancelBtn} onPress={onClose}>
-              <Text style={rStyles.cancelBtnText}>Plus tard</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[rStyles.submitBtn, (!rating || loading) && { opacity: 0.4 }]}
-              onPress={handleSubmit}
-              disabled={!rating || loading}
-            >
-              {loading
-                ? <ActivityIndicator color="#fff" size="small" />
-                : <Text style={rStyles.submitBtnText}>Envoyer</Text>
-              }
-            </TouchableOpacity>
-          </View>
-        </View>
+        </ScrollView>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   )
 }
 
@@ -293,6 +323,25 @@ export default function ClientTrackingScreen({ navigation }) {
     setError(''); setSuccess('')
   }
 
+  // ── Geocodage : adresse texte → coordonnees GPS reelles ──────────────────
+  // Utilise Nominatim (OpenStreetMap) — gratuit, sans cle API
+  const geocodeAddress = async (address) => {
+    try {
+      const query = encodeURIComponent(address.trim() + ', Marrakech, Maroc')
+      const res   = await fetch(
+        'https://nominatim.openstreetmap.org/search?q=' + query + '&format=json&limit=1',
+        { headers: { 'Accept-Language': 'fr', 'User-Agent': 'DelivTrack/1.0' } }
+      )
+      const data = await res.json()
+      if (data && data.length > 0) {
+        return { latitude: parseFloat(data[0].lat), longitude: parseFloat(data[0].lon) }
+      }
+    } catch (e) {
+      console.warn('Geocodage echoue:', e.message)
+    }
+    return { latitude: 31.6295, longitude: -7.9811 } // Fallback centre Marrakech
+  }
+
   const handleSubmit = async () => {
     if (!form.address.trim()) { setError('Adresse de livraison requise'); return }
     const token = await AsyncStorage.getItem('token')
@@ -300,9 +349,15 @@ export default function ClientTrackingScreen({ navigation }) {
     setError(''); setSubmitting(true)
     try {
       const items = cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price, photo: i.photo }))
+
+      // Geocodage de l'adresse pour avoir les vraies coordonnees GPS
+      const coords = await geocodeAddress(form.address)
+
       await api.post('/client/order', {
         address: form.address, pickupAddress: form.pickupAddress,
-        note: form.note, items, latitude: 31.6295, longitude: -7.9811,
+        note: form.note, items,
+        latitude:  coords.latitude,
+        longitude: coords.longitude,
       })
       setSuccess('Commande passee avec succes !')
       await loadOrders(true)
@@ -1257,33 +1312,60 @@ const styles = StyleSheet.create({
 
 // ─── RatingModal styles ───────────────────────────────────────────────────────
 const rStyles = StyleSheet.create({
+  // KeyboardAvoidingView prend tout l'écran
   overlay: {
     position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(26,26,46,0.5)',
-    zIndex: 100, justifyContent: 'flex-end',
+    zIndex: 100,
+    justifyContent: 'flex-end',
   },
-  modal:       { backgroundColor: C.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingBottom: 40 },
-  modalHandle: { width: 36, height: 4, backgroundColor: C.border, borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 8 },
-  modalHeader: { paddingHorizontal: 24, paddingVertical: 18, borderBottomWidth: 1, borderBottomColor: C.border },
-  modalTitle:  { fontSize: 18, fontWeight: '900', color: C.dark, marginBottom: 4 },
-  modalSub:    { fontSize: 13, color: C.textSecondary },
-  modalBody:   { padding: 24 },
+  // Zone sombre cliquable au-dessus du modal
+  overlayBg: {
+    position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
+    backgroundColor: 'rgba(26,26,46,0.55)',
+  },
+  modal: {
+    backgroundColor: C.card,
+    borderTopLeftRadius: 28, borderTopRightRadius: 28,
+    maxHeight: '90%',       // ne jamais dépasser 90% de l'écran
+    paddingBottom: 16,
+  },
+  modalHandle: {
+    width: 36, height: 4, backgroundColor: C.border,
+    borderRadius: 2, alignSelf: 'center', marginTop: 12, marginBottom: 4,
+  },
+  modalHeader: {
+    paddingHorizontal: 24, paddingVertical: 18,
+    borderBottomWidth: 1, borderBottomColor: C.border,
+  },
+  modalTitle: { fontSize: 20, fontWeight: '900', color: C.dark, marginBottom: 4 },
+  modalSub:   { fontSize: 13, color: C.textSecondary, lineHeight: 18 },
+  modalBody:  { padding: 24 },
 
   starsRow:    { flexDirection: 'row', justifyContent: 'center', gap: 10, marginBottom: 10 },
-  starBtn:     { padding: 4 },
-  starText:    { fontSize: 38 },
-  ratingLabel: { textAlign: 'center', fontSize: 14, fontWeight: '700', color: '#D97706', marginBottom: 18 },
+  starBtn:     { padding: 6 },
+  starText:    { fontSize: 40 },
+  ratingLabel: { textAlign: 'center', fontSize: 14, fontWeight: '700', color: '#D97706', marginBottom: 20 },
 
+  commentLabel: {
+    fontSize: 11, fontWeight: '800', color: C.textSecondary,
+    letterSpacing: 1.2, marginBottom: 8,
+  },
   commentInput: {
     borderWidth: 1.5, borderColor: C.border, borderRadius: 14,
     paddingHorizontal: 14, paddingVertical: 12,
     fontSize: 14, color: C.dark,
-    minHeight: 80, marginBottom: 16,
+    // hauteur fixe — pas de minHeight pour éviter le débordement
+    height: 100,
+    marginBottom: 16,
+    backgroundColor: C.bg,
   },
   errorText: { color: C.red, fontSize: 13, marginBottom: 12, fontWeight: '600' },
 
-  modalBtns:     { flexDirection: 'row', gap: 12 },
-  cancelBtn:     { flex: 1, borderWidth: 1.5, borderColor: C.border, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+  modalBtns:     { flexDirection: 'row', gap: 12, marginBottom: 8 },
+  cancelBtn:     {
+    flex: 1, borderWidth: 1.5, borderColor: C.border,
+    borderRadius: 14, paddingVertical: 14, alignItems: 'center',
+  },
   cancelBtnText: { fontSize: 14, fontWeight: '600', color: C.textSecondary },
   submitBtn:     { flex: 1, backgroundColor: C.brand, borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
   submitBtnText: { fontSize: 14, fontWeight: '800', color: '#fff' },

@@ -22,7 +22,7 @@ exports.login = async (req, res, next) => {
   } catch (e) { next(e); }
 };
 
-// VERSION CORRIGÉE
+
 exports.getTodayOrders = async (req, res, next) => {
   try {
     const today  = new Date().toISOString().split('T')[0];

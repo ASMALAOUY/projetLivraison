@@ -76,8 +76,8 @@ router.get('/my-orders', auth, async (req, res, next) => {
       // Récupérer la tournée
       const order = await DeliveryOrder.findByPk(point.orderId);
 
-      // ✅ CORRECTION CLÉE : chercher le livreur dans 'users' (role=driver)
-      // car driverAcceptedId sur le point = UUID de la table users
+
+   
       let driverData = null;
 
       // Priorité 1 : driverAcceptedId sur le point lui-même
@@ -92,7 +92,7 @@ router.get('/my-orders', auth, async (req, res, next) => {
         if (driverUser) {
           driverData = driverUser.toJSON();
         } else {
-          // Fallback : ancienne table 'drivers' séparée
+          
           const oldDriver = await Driver.findByPk(driverUserId, {
             attributes: ['id', 'name', 'phone', 'vehicle'],
           }).catch(() => null);
@@ -112,7 +112,7 @@ router.get('/my-orders', auth, async (req, res, next) => {
       });
     }
 
-    // Dédupliquer par point.id au cas où une jointure crée des doublons
+    
     const unique = result.filter((item, index, self) =>
       index === self.findIndex(t => t.id === item.id)
     )

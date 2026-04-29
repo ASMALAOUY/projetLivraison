@@ -10,7 +10,7 @@ router.post('/gps', auth, async (req, res, next) => {
     if (!latitude || !longitude)
       return res.status(400).json({ error: 'latitude et longitude requis' });
 
-    // ← Les livreurs sont dans 'users' (role=driver), pas dans 'drivers'
+    // ← Les livreurs sont dans 'users' (role=driver)
     const driver = await User.findOne({ where: { id: req.user.id, role: 'driver' } });
     if (!driver) return res.status(404).json({ error: 'Livreur non trouvé' });
 

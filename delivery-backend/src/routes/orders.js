@@ -1,33 +1,52 @@
 const router = require('express').Router();
-const auth = require('../middlewares/auth');
+const auth   = require('../middlewares/auth');
 const { DeliveryOrder, DeliveryPoint, User } = require('../models');
 const { Op } = require('sequelize');
 
-// ─── GET toutes les tournées ───────────────────────────────────────────────────
+
+async function resolveDriver(plain) {
+  // 1. driverId direct sur la tournée
+  if (plain.driverId) {
+    const driver = await User.findOne({
+      where: { id: plain.driverId },
+      attributes: ['id', 'name', 'phone', 'vehicle'],
+    });
+    if (driver) return driver.toJSON();
+  }
+
+  
+  const point = await DeliveryPoint.findOne({
+    where: {
+      orderId:          plain.id,
+      driverAcceptedId: { [Op.not]: null },
+    },
+  });
+
+  if (point?.driverAcceptedId) {
+    const driver = await User.findOne({
+      where: { id: point.driverAcceptedId },
+      attributes: ['id', 'name', 'phone', 'vehicle'],
+    });
+    if (driver) return driver.toJSON();
+  }
+
+  return null;
+}
+
+// ─── GET toutes les tournées ──────────────────────────────────────────────────
 router.get('/', auth, async (req, res) => {
   try {
     const orders = await DeliveryOrder.findAll({
       include: [
-        {
-          model: User,
-          as: 'Manager',
-          attributes: ['id', 'name', 'email'],
-          required: false,
-        },
-        {
-          model: DeliveryPoint,
-          as: 'DeliveryPoints',
-          required: false,
-        },
+        { model: User,          as: 'Manager',        attributes: ['id', 'name', 'email'], required: false },
+        { model: DeliveryPoint, as: 'DeliveryPoints', required: false },
       ],
       order: [['createdAt', 'DESC']],
     });
 
-    // Enrichir chaque tournée avec les données du livreur (depuis users)
     const result = await Promise.all(orders.map(async (o) => {
       const plain = o.toJSON();
 
-      // Formater les items des points
       if (plain.DeliveryPoints) {
         plain.DeliveryPoints = plain.DeliveryPoints.map(p => {
           if (typeof p.items === 'string') {
@@ -37,16 +56,8 @@ router.get('/', auth, async (req, res) => {
         });
       }
 
-      // Chercher le livreur dans la table users (role=driver)
-      if (plain.driverId) {
-        const driver = await User.findOne({
-          where: { id: plain.driverId, role: 'driver' },
-          attributes: ['id', 'name', 'phone', 'vehicle'],
-        });
-        plain.Driver = driver ? driver.toJSON() : null;
-      } else {
-        plain.Driver = null;
-      }
+      //   cherche aussi dans driverAcceptedId si driverId est null
+      plain.Driver = await resolveDriver(plain);
 
       return plain;
     }));
@@ -58,7 +69,7 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// ─── POST créer une tournée ────────────────────────────────────────────────────
+// ─── POST créer une tournée ───────────────────────────────────────────────────
 router.post('/', auth, async (req, res) => {
   try {
     if (!['manager', 'admin'].includes(req.user.role)) {
@@ -66,17 +77,11 @@ router.post('/', auth, async (req, res) => {
     }
 
     const { driverId, date } = req.body;
-
     if (!driverId) return res.status(400).json({ error: 'Livreur requis' });
     if (!date)     return res.status(400).json({ error: 'Date requise' });
 
-    // Vérifier que le livreur existe dans users
-    const driver = await User.findOne({
-      where: { id: driverId, role: 'driver' },
-    });
-    if (!driver) {
-      return res.status(404).json({ error: 'Livreur introuvable' });
-    }
+    const driver = await User.findOne({ where: { id: driverId, role: 'driver' } });
+    if (!driver) return res.status(404).json({ error: 'Livreur introuvable' });
 
     const order = await DeliveryOrder.create({
       driverId,
@@ -85,9 +90,8 @@ router.post('/', auth, async (req, res) => {
       status: 'planned',
     });
 
-    // Retourner avec les données du livreur pour affichage immédiat
-    const plain = order.toJSON();
-    plain.Driver = { id: driver.id, name: driver.name, vehicle: driver.vehicle };
+    const plain    = order.toJSON();
+    plain.Driver   = { id: driver.id, name: driver.name, vehicle: driver.vehicle };
     plain.DeliveryPoints = [];
 
     res.status(201).json(plain);
@@ -97,22 +101,13 @@ router.post('/', auth, async (req, res) => {
   }
 });
 
-// ─── GET une tournée par ID ────────────────────────────────────────────────────
+// ─── GET une tournée par ID ───────────────────────────────────────────────────
 router.get('/:id', auth, async (req, res) => {
   try {
     const order = await DeliveryOrder.findByPk(req.params.id, {
       include: [
-        {
-          model: User,
-          as: 'Manager',
-          attributes: ['id', 'name', 'email'],
-          required: false,
-        },
-        {
-          model: DeliveryPoint,
-          as: 'DeliveryPoints',
-          required: false,
-        },
+        { model: User,          as: 'Manager',        attributes: ['id', 'name', 'email'], required: false },
+        { model: DeliveryPoint, as: 'DeliveryPoints', required: false },
       ],
     });
 
@@ -129,15 +124,8 @@ router.get('/:id', auth, async (req, res) => {
       });
     }
 
-    if (plain.driverId) {
-      const driver = await User.findOne({
-        where: { id: plain.driverId, role: 'driver' },
-        attributes: ['id', 'name', 'phone', 'vehicle'],
-      });
-      plain.Driver = driver ? driver.toJSON() : null;
-    } else {
-      plain.Driver = null;
-    }
+    //  Même correction ici
+    plain.Driver = await resolveDriver(plain);
 
     res.json(plain);
   } catch (error) {
@@ -151,9 +139,7 @@ router.get('/driver/:driverId', auth, async (req, res) => {
   try {
     const orders = await DeliveryOrder.findAll({
       where: { driverId: req.params.driverId },
-      include: [
-        { model: DeliveryPoint, as: 'DeliveryPoints', required: false },
-      ],
+      include: [{ model: DeliveryPoint, as: 'DeliveryPoints', required: false }],
       order: [['createdAt', 'DESC']],
     });
     res.json(orders);
@@ -167,9 +153,7 @@ router.get('/driver/:driverId', auth, async (req, res) => {
 router.patch('/:id/status', auth, async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['planned', 'in_progress', 'done'];
-
-    if (!validStatuses.includes(status)) {
+    if (!['planned', 'in_progress', 'done'].includes(status)) {
       return res.status(400).json({ error: 'Statut invalide' });
     }
 
